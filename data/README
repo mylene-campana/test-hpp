@@ -1,0 +1,16 @@
+Data files
+
+- configuration.data: contains a configuration for hrp2 as described in
+  hrp2_14_description package. The configuration is valid for the following sets
+  of files:
+    - "hrp2_14.urdf", "hrp2_14.srdf", "hrp2_14.rcpdf" (model 1),
+    - "hrp2_14_capsule.urdf", "hrp2_14_capsule.srdf", "hrp2_14.rcpdf" (model 2).
+
+- distances-mesh.data: contains inter-body distance information for model 1.
+  For each line, the data is organized as follows
+  distance, name of one body, x,y,z coordinates of one closest point,
+  x,y,z coordinates of the other closest point.
+
+- distance-capsule.data: the same for model 2.
+
+Note that coordinates of closest points are expressed in world frame.
