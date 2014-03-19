@@ -1,0 +1,192 @@
+// Copyright (C) 2013, 2014 LAAS-CNRS
+// Author: Florent Lamiraux
+//
+// This file is part of the test-hpp.
+//
+// test-hpp is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// test-hpp is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with test-hpp.  If not, see <http://www.gnu.org/licenses/>.
+
+#include <sstream>
+#include <ostream>
+#include <fstream>
+#include <vector>
+
+#include <Eigen/Core>
+
+#include <hpp/util/debug.hh>
+#include <hpp/model/body.hh>
+#include <hpp/model/collision-object.hh>
+#include <hpp/model/device.hh>
+#include <hpp/model/joint.hh>
+#include <hpp/model/urdf/util.hh>
+
+#define BOOST_TEST_MODULE forward_kinematics
+#include <boost/test/included/unit_test.hpp>
+
+static const unsigned int nbLines = 274;
+static const std::string filename
+("@PROJECT_SOURCE_DIR@/data/distances-capsule.data");
+
+struct Distance_t {
+  Distance_t () :d_ (0), x0_ (0), y0_ (0), z0_ (0), x1_ (0), y1_ (0), z1_ (0)
+  {
+  }
+  Distance_t (double d, double x0, double y0, double z0,
+	      double x1, double y1, double z1) : d_ (d),
+						 x0_ (x0), y0_ (y0), z0_ (z0),
+						 x1_ (x1), y1_ (y1), z1_ (z1)
+  {
+  }
+  Distance_t (const Distance_t& other) :
+    d_ (other.d_), x0_ (other.x0_), y0_ (other.y0_), z0_ (other.z0_),
+    x1_ (other.x1_), y1_ (other.y1_), z1_ (other.z1_)
+  {
+  }
+  Distance_t& swap ()
+  {
+    double tmp;
+    tmp = x1_; x1_ = x0_; x0_ = tmp;
+    tmp = y1_; y1_ = y0_; y0_ = tmp;
+    tmp = z1_; z1_ = z0_; z0_ = tmp;
+    return *this;
+  }
+  void checkClose (const Distance_t& other)
+  {
+    BOOST_CHECK (fabs (d_ - other.d_ ) < 1e-5);
+    BOOST_CHECK (fabs (x0_ - other.x0_ ) < 1e-5);
+    BOOST_CHECK (fabs (y0_ - other.y0_ ) < 1e-5);
+    BOOST_CHECK (fabs (z0_ - other.z0_ ) < 1e-5);
+    BOOST_CHECK (fabs (x1_ - other.x1_ ) < 1e-5);
+    BOOST_CHECK (fabs (y1_ - other.y1_ ) < 1e-5);
+    BOOST_CHECK (fabs (z1_ - other.z1_ ) < 1e-5);
+  }
+  // Distance and closest points on bodies.
+  double d_, x0_, y0_, z0_, x1_, y1_, z1_;
+}; // struct Distance_t
+
+typedef std::map <std::pair <std::string, std::string>, Distance_t>
+InterDistances_t;
+
+InterDistances_t readDataFile ()
+{
+  InterDistances_t result;
+  std::ifstream file;
+  unsigned int line = 0;
+  double d, x0, y0, z0, x1, y1, z1;
+  std::string body1, body2;
+  file.open (filename.c_str ());
+  if (!file.good ()) {
+    throw std::runtime_error ("failed to open file " + filename);
+  }
+  while (line < nbLines) {
+    line++;
+    file >> d >> body1 >> body2 >> x0 >> y0 >> z0 >> x1 >> y1 >> z1;
+    // To make access in the map independant from the order in the pair key,
+    // we insert both keys.
+    std::pair <std::string, std::string> key1 (body1, body2);
+    std::pair <std::string, std::string> key2 (body2, body1);
+    Distance_t distance (d, x0, y0, z0, x1, y1, z1);
+    result [key1] = distance;
+    result [key2] = distance.swap ();
+  }
+  return  result;
+}
+
+BOOST_AUTO_TEST_SUITE( test_suite )
+
+BOOST_AUTO_TEST_CASE (interbody_distances_capsule)
+{
+  using hpp::model::Device;
+  using hpp::model::Joint;
+  using hpp::model::Body;
+  typedef hpp::model::ObjectVector_t ObjectVector_t;
+  typedef hpp::model::JointVector_t JointVector_t;
+  typedef std::vector<double> vector_t;
+  std::ifstream fileConfig;
+  std::ofstream fileHrp2;
+  vector_t::size_type configSize;
+  fileConfig.open ("@PROJECT_SOURCE_DIR@/data/configuration.data");
+  vector_t dofs;
+  bool eof = false;
+  double value;
+
+  // Read configuration file
+  while (!eof) {
+    fileConfig >> value;
+    if (fileConfig.fail ()) {
+      eof = true;
+    } else {
+      dofs.push_back (value);
+    }
+  }
+  fileConfig.close ();
+  // Load hrp2
+  hpp::model::HumanoidRobotShPtr humanoidRobot;
+  hpp::model::urdf::loadRobotModel (humanoidRobot, "hrp2_14", "_capsule",
+				    "_capsule", "");
+  configSize = humanoidRobot->numberDof ();
+  // Check size of config
+  if (dofs.size () != configSize) {
+    std::ostringstream error;
+    error << "wrong configuration size: " << dofs.size ()
+	  << ", expecting " << configSize;
+    throw std::runtime_error (error.str ());
+  }
+  hpp::model::Configuration_t config (configSize);
+  for (vector_t::size_type i=0; i<configSize; ++i) {
+    config [i] = dofs [i];
+  }
+  humanoidRobot->currentConfiguration (config);
+  humanoidRobot->computeForwardKinematics ();
+  hppDout (info, *humanoidRobot);
+  humanoidRobot->computeDistances ();
+  const hpp::model::DistanceResults_t& distances
+    (humanoidRobot->distanceResults ());
+  hppDout (info, "Number of distance computations: " << distances.size ());
+
+  InterDistances_t interDistances = readDataFile ();
+  for (hpp::model::DistanceResults_t::const_iterator it = distances.begin ();
+       it != distances.end (); it++) {
+    std::string body1 (it->innerObject->name ());
+    std::string body2 (it->outerObject->name ());
+    Distance_t distance (it->fcl.min_distance,
+			 it->fcl.nearest_points [0][0],
+			 it->fcl.nearest_points [0][1],
+			 it->fcl.nearest_points [0][2],
+			 it->fcl.nearest_points [1][0],
+			 it->fcl.nearest_points [1][1],
+			 it->fcl.nearest_points [1][2]);
+			 
+    hppDout (info, it->fcl.min_distance << ",\t"
+	     << it->innerObject->name () << ",\t"
+	     << it->outerObject->name () << ",\t"
+	     << it->fcl.nearest_points [0][0] << ",\t"
+	     << it->fcl.nearest_points [0][1] << ",\t"
+	     << it->fcl.nearest_points [0][2] << ",\t"
+	     << it->fcl.nearest_points [1][0] << ",\t"
+	     << it->fcl.nearest_points [1][1] << ",\t"
+	     << it->fcl.nearest_points [1][2] << ",\t");
+    std::pair <std::string, std::string> key (body1, body2);
+    InterDistances_t::iterator it = interDistances.find (key);
+    // Check that pair of bodies is in map
+    if (it == interDistances.end ()) {
+      throw std::runtime_error ("pair (" + body1 + "," + body2 +
+				") is not in " + filename);
+    }
+    Distance_t distanceFile = it->second;
+    hppDout (info, "Checking pair " << body1 << ", " << body2);
+    distance.checkClose (distanceFile);
+  }
+}
+
+BOOST_AUTO_TEST_SUITE_END()

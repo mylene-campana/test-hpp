@@ -1,8 +1,8 @@
 # Copyright 2012, 2013, 2014 CNRS-LAAS
 #
-# Author: Florent Lamiraux, Thomas Moulard
+# Author: Florent Lamiraux
 #
-# This file is part of hpp-model-urdf.
+# This file is part of test-hpp
 # hpp-model-urdf is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Lesser General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
@@ -13,48 +13,34 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Lesser Public License for more details.
 # You should have received a copy of the GNU Lesser General Public License
-# along with hpp-model-urdf.  If not, see <http://www.gnu.org/licenses/>.
+# along with test-hpp  If not, see <http://www.gnu.org/licenses/>.
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
 
 include(cmake/base.cmake)
 include(cmake/boost.cmake)
+include(cmake/eigen.cmake)
 
 SET(PROJECT_NAME hpp-test)
 SET(PROJECT_DESCRIPTION "Integration tests for Humanoid Path Planner platform.")
 SET(PROJECT_URL "github.com/laas/hpp-test")
 
-SETUP_PROJET()
+SETUP_PROJECT()
 
-ADD_REQUIRED_DEPENDENCY("hpp-model-urdf >= 2.0")
-ADD_REQUIRED_DEPENDENCY("hrp2_14_decription")
+SEARCH_FOR_EIGEN()
+# Activate hpp-util logging if requested
+SET (HPP_DEBUG FALSE CACHE BOOL "trigger hpp-util debug output")
+IF (HPP_DEBUG)
+  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DHPP_DEBUG")
+ENDIF()
 
-INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIRS})
+# Search for Boost.
+# Boost.Test is used by the test suite.
+SEARCH_FOR_BOOST()
+ADD_REQUIRED_DEPENDENCY("hpp-util")
+ADD_REQUIRED_DEPENDENCY("hpp-model-urdf")
+ADD_REQUIRED_DEPENDENCY("hrp2_14_description")
 
-# Make Boost.Test generates the main function in test cases.
-ADD_DEFINITIONS(-DBOOST_TEST_DYN_LINK -DBOOST_TEST_MAIN)
+ADD_SUBDIRECTORY(tests)
 
-# ADD_TESTCASE(NAME)
-# ------------------------
-#
-# Define a test named `NAME'.
-#
-# This macro will create a binary from `NAME.cc', link it against
-# Boost and add it to the test suite.
-#
-MACRO(ADD_TESTCASE NAME GENERATED)
-  IF (${GENERATED} STREQUAL TRUE)
-    ADD_EXECUTABLE(${NAME} ${CMAKE_CURRENT_BINARY_DIR}/${NAME}.cc)
-  ELSE()
-    ADD_EXECUTABLE(${NAME} ${NAME}.cc)
-  ENDIF()
-  ADD_TEST(${NAME} ${RUNTIME_OUTPUT_DIRECTORY}/${NAME})
-
-  # Link against Boost and project library.
-  TARGET_LINK_LIBRARIES(${NAME}
-    ${Boost_LIBRARIES}
-    ${PROJECT_NAME})
-  PKG_CONFIG_USE_DEPENDENCY(${NAME} hpp-model-urdf)
-ENDMACRO(ADD_TESTCASE)
-
-SETUP_PROJET_FINALIZE()
+SETUP_PROJECT_FINALIZE()
