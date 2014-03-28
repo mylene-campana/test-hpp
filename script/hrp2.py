@@ -22,7 +22,6 @@ class Robot (Parent):
     urdfName = "hrp2_14"
     urdfSuffix = ""
     srdfSuffix = ""
-    rcpdfSuffix = ""
     halfSitting = \
         {"base_joint_x": 0.0,
          "base_joint_y": 0.0,
@@ -71,8 +70,8 @@ class Robot (Parent):
          }
 
     def __init__ (self):
-        Parent.__init__ (self, self.urdfName, self.urdfSuffix, self.srdfSuffix,
-                         self.rcpdfSuffix)
+        Parent.__init__ (self, "freeflyer", self.urdfName, self.urdfSuffix,
+                         self.srdfSuffix)
 
     def getInitialConfig (self):
         q = []
