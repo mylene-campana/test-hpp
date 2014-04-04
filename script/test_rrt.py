@@ -11,11 +11,14 @@ Robot.srdfSuffix= '_capsule'
 
 robot = Robot ()
 robot.setTranslationBounds (-3, 3, -3, 3, 0, 1)
+#robot.setTranslationBounds (-1, 1, -1, 1, 0, 1) # some discontinuities seem to appear in the p(0) solution
 cl = robot.client
 
 r = ScenePublisher (robot.jointNames [4:])
+q_obs=[0, 0, 0, 1, 0, 0, 0]
 q0 = robot.getInitialConfig ()
-r (q0)
+#r (q0)
+r(q0,q_obs)
 
 # Add constraints
 wcl = WsClient ()
@@ -41,4 +44,6 @@ status, q2proj = cl.problem.applyConstraints (q2)
 cl.problem.setInitialConfig (q1proj)
 cl.problem.addGoalConfig (q2proj)
 cl.problem.solve ()
+
+p = PathPlayer (cl, r)
 
