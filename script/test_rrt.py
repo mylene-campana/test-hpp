@@ -3,7 +3,7 @@
 from hpp_corbaserver.hpp import Configuration
 from hpp_ros import ScenePublisher
 from hpp.tools import PathPlayer
-from hrp2 import Robot
+from hpp.corbaserver.hrp2 import Robot
 from hpp.corbaserver.wholebody_step.client import Client as WsClient
 
 Robot.urdfSuffix = '_capsule'
