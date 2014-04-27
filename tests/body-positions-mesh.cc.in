@@ -68,9 +68,10 @@ BOOST_AUTO_TEST_CASE (body_positions_mesh)
   fileConfig.close ();
   // Load hrp2
   hpp::model::HumanoidRobotPtr_t humanoidRobot =
-    hpp::model::urdf::loadHumanoidModel("hrp2_14", "freeflyer",
-					"hrp2_14_description", "hrp2_14",
-					"", "");
+    hpp::model::HumanoidRobot::create ("hrp2_14");
+  hpp::model::urdf::loadHumanoidModel(humanoidRobot, "freeflyer",
+				      "hrp2_14_description", "hrp2_14",
+				      "", "");
   configSize = humanoidRobot->configSize ();
   // Check size of config
   if (dofs.size () != configSize) {
