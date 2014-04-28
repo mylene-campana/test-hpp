@@ -3,19 +3,21 @@
 from hpp_corbaserver.hpp import Configuration
 from hpp_ros import ScenePublisher
 from hpp.tools import PathPlayer
-from hrp2 import Robot
+from hpp.corbaserver.hrp2 import Robot
+import time
 from hpp.corbaserver.wholebody_step.client import Client as WsClient
 
 Robot.urdfSuffix = '_capsule'
-Robot.srdfSuffix= '_capsule'
-
-robot = Robot () # hrp2 with capsules for collision tests
+Robot.srdfSuffix = '_capsule'
+robot = Robot ('hrp2_14')
 robot.setTranslationBounds (-4, 4, -4, 4, 0, 1)
 cl = robot.client
 
 r = ScenePublisher (robot.jointNames [4:])
 q0 = robot.getInitialConfig ()
 r(q0)
+q_obs=[0, 0, 0, 1, 0, 0, 0]
+#r(q0,q_obs)
 
 # Add constraints
 wcl = WsClient ()
@@ -69,6 +71,14 @@ r.addObject('red_box','obstacle_base_three') # red box
 position_r= Configuration (trs=(0,-3,0) , quat=(1,0,0,0))
 r.moveObject('red_box',position_r)
 r(q1)
+
+
+# Nodes from the roadmap
+nodes = cl.problem.nodes ()
+len(nodes)
+for n in  nodes:
+    r (n)
+    time.sleep (.2)
 
 
 # Old creating geometries to add to hpp
