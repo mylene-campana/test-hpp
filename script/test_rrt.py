@@ -1,6 +1,6 @@
 #/usr/bin/env python
 
-from hpp_corbaserver.hpp import Configuration
+from hpp.corbaserver import Configuration
 from hpp_ros import ScenePublisher
 from hpp.tools import PathPlayer
 from hpp.corbaserver.hrp2 import Robot
