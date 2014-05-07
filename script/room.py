@@ -1,6 +1,6 @@
 #/usr/bin/env python
 
-from hpp_corbaserver.hpp import Configuration
+from hpp.corbaserver import Configuration
 from hpp_ros import ScenePublisher
 from hpp.tools import PathPlayer
 from hpp.corbaserver.hrp2 import Robot
@@ -20,7 +20,7 @@ r(q0)
 k=2.3
 kk=k-1
 r.addObject('lamp','lamp_base')
-lamp_pos= Configuration (trs=(0,-k,0) , quat=(1,0,0,0))
+lamp_pos= Configuration (trs=(0-0.3,-k,0) , quat=(1,0,0,0))
 r.moveObject('lamp',lamp_pos)
 r.addObject('armchair','armchair_base')
 armchair_pos= Configuration (trs=(kk,kk,0) , quat=(0.5,0,0,-0.5))
@@ -39,7 +39,7 @@ r.addObject('table','table_base')
 table_pos= Configuration (trs=(0,kk,0) , quat=(1,0,0,0))
 r.moveObject('table',table_pos)
 r.addObject('commode','commode_base')
-commode_pos= Configuration (trs=(-k,-k,0) , quat=(0.5,0,0,0.5))
+commode_pos= Configuration (trs=(-k-0.2,-k+0.2,0) , quat=(0.5,0,0,0.5))
 r.moveObject('commode',commode_pos)
 r.addObject('books','books_base')
 books_pos= Configuration (trs=(-k+0.1,-k,1) , quat=(0.5,0,0,0.5))
@@ -51,7 +51,7 @@ r.addObject('beer','beer_base')
 beer_pos= Configuration (trs=(0,kk,0.28) , quat=(1,0,0,0)) # on the "table basse"
 r.moveObject('beer',beer_pos)
 r.addObject('stuff','stuff_base')
-stuff_pos= Configuration (trs=(kk-0.2,-k-0.4,1.7) , quat=(1,0,0,0)) # on the "table basse"
+stuff_pos= Configuration (trs=(kk-0.2,-k-0.4,1.7) , quat=(0.5,0,0,0.5)) # on the "table basse"
 r.moveObject('stuff',stuff_pos)
 r(q0)
 
