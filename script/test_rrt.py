@@ -18,7 +18,14 @@ r (q0)
 
 # Add constraints
 wcl = WsClient ()
-wcl.problem.addStaticStabilityConstraints (q0)
+wcl.problem.addStaticStabilityConstraints ("balance", q0, robot.leftAnkle,
+                                           robot.rightAnkle)
+cl.problem.setNumericalConstraints ("balance", ["balance/relative-com",
+                                                "balance/relative-orientation",
+                                                "balance/relative-position",
+                                                "balance/orientation-left-foot",
+                                                "balance/position-left-foot"])
+
 # lock hands in closed position
 lockedDofs = robot.leftHandClosed ()
 for name, value in lockedDofs.iteritems ():
