@@ -1,7 +1,6 @@
 #/usr/bin/env python
 # Script which goes with gravity.launch, to simulate Hrp2 in the space with a spaceship from a movie and an emu character from Nasa.gov. See gravity_description package.
 
-from hpp.corbaserver import Configuration
 from hpp_ros import ScenePublisher
 from hpp.tools import PathPlayer
 from hpp.corbaserver.hrp2 import Robot
@@ -22,10 +21,9 @@ q4 = [7.65, -2.41, 0.545, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -0.8, 0.0, -0.
 
 # Display spaceship environment and Emu guy
 r.addObject('spaceShip','obstacle_base') # display
-position_ss_disp= Configuration (trs=(0,0,0) , quat=(1,0,0,0))
-r.moveObject('spaceShip',position_ss_disp)
+r.moveObject('spaceShip',(0,0,0,1,0,0,0))
 r.addObject('emu','emu_base') # display
-position_emu_disp= Configuration (trs=(0,-1,0.2) , quat=(1,0,0,0))
+position_emu= (0,-1,0.2,1,0,0,0)
 r.moveObject('emu',position_emu_disp)
 r(q1)
 
@@ -36,7 +34,6 @@ p = PathPlayer (cl, r)
 # Load obstacles in HPP
 cl.obstacle.loadObstacleModel('gravity_description','gravity_decor') # do not move (position in urdf)
 cl.obstacle.loadObstacleModel('gravity_description','emu') # loaded as an obstacle for now
-position_emu= Configuration (trs=(0,-1,0.2) , quat=(1,0,0,0))
 cl.obstacle.moveObstacle ('emu_base', position_emu)
 
 cl.problem.solve ()

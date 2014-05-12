@@ -1,12 +1,11 @@
 #/usr/bin/env python
 # Script which goes with boxes.launch, to simulate Hrp2 sliding on the floor with three boxes as obstacles (see boxes_description package).
 
-from hpp.corbaserver import Configuration
 from hpp_ros import ScenePublisher
 from hpp.tools import PathPlayer
 from hpp.corbaserver.hrp2 import Robot
-import time
 from hpp.corbaserver.wholebody_step.client import Client as WsClient
+import time
 
 Robot.urdfSuffix = '_capsule'
 Robot.srdfSuffix = '_capsule'
@@ -20,15 +19,21 @@ r(q0)
 
 # Add constraints
 wcl = WsClient ()
-wcl.problem.addStaticStabilityConstraints (q0)
+wcl.problem.addStaticStabilityConstraints ("balance", q0, robot.leftAnkle,
+                                           robot.rightAnkle)
+cl.problem.setNumericalConstraints ("balance", ["balance/relative-com",
+                                                "balance/relative-orientation",
+                                                "balance/relative-position",
+                                                "balance/orientation-left-foot",
+                                                "balance/position-left-foot"])
 # lock hands in closed position
 lockedDofs = robot.leftHandClosed ()
-for index, value in lockedDofs:
-    cl.problem.lockDof (index, value)
+for name, value in lockedDofs.iteritems ():
+    cl.problem.lockDof (name, value)
 
 lockedDofs = robot.rightHandClosed ()
-for index, value in lockedDofs:
-    cl.problem.lockDof (index, value)
+for name, value in lockedDofs.iteritems ():
+    cl.problem.lockDof (name, value)
 
 q1=[-4,0,0,1,0,0,0, 0.0, 0.0, 0.0, 0.0, 0.261799, 0.17453, 0.0, -0.523599, 0.0, 0.0, 0.1, 0.0, 0.0, 0.0, 0.0, 0.0, 0.261799, -0.17453, 0.0, -0.523599, 0.0, 0.0, 0.1, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -0.453786, 0.872665, -0.418879, 0.0, 0.0, 0.0, -0.453786, 0.872665, -0.418879, 0.0]
 q1proj = cl.problem.applyConstraints (q1)
@@ -44,26 +49,21 @@ cl.problem.solve ()
 
 # Add obstacles to hpp via the urdf model
 cl.obstacle.loadObstacleModel('boxes_description','boxes')
-position_g= Configuration (trs=(0,0,1) , quat=(1,0,0,0))
+position_g= (0,0,1,1,0,0,0)
 cl.obstacle.moveObstacle ('obstacle_base', position_g)
-position_b= Configuration (trs=(0,3,1) , quat=(1,0,0,0))
+position_b= (0,3,1,1,0,0,0)
 cl.obstacle.moveObstacle ('obstacle_base_two', position_b)
-position_r= Configuration (trs=(0,-3,1) , quat=(1,0,0,0))
+position_r= (0,-3,1,1,0,0,0)
 cl.obstacle.moveObstacle ('obstacle_base_three', position_r)
 cl.problem.solve ()
 
 
 # Display obstacles in RViz
 r.addObject('boxes','obstacle_base') # green box
-position_g= Configuration (trs=(0,0,0) , quat=(1,0,0,0))
 r.moveObject('boxes',position_g)
-
 r.addObject('blue_box','obstacle_base_two') # blue box
-position_b= Configuration (trs=(0,3,0) , quat=(1,0,0,0))
 r.moveObject('blue_box',position_b)
-
 r.addObject('red_box','obstacle_base_three') # red box
-position_r= Configuration (trs=(0,-3,0) , quat=(1,0,0,0))
 r.moveObject('red_box',position_r)
 r(q1)
 
