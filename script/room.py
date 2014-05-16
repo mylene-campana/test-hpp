@@ -27,7 +27,6 @@ r.moveObject('armchair',armchair_pos)
 r.addObject('pc','pc_base')
 pc_pos= (k,-k+0.4,1.04,0.5,0,0,-0.5)
 r.moveObject('pc',pc_pos)
-r(q0)
 r.addObject('desk','desk_base')
 desk_pos= (k,-k,0,0.5,0,0,-0.5)
 r.moveObject('desk',desk_pos)
@@ -50,7 +49,7 @@ r.addObject('beer','beer_base')
 beer_pos= (0,kk,0.28,1,0,0,0) # on the "table basse"
 r.moveObject('beer',beer_pos)
 r.addObject('stuff','stuff_base')
-stuff_pos= (kk-0.2,-k-0.4,1.7,0.5,0,0,0.5) # on the "table basse"
+stuff_pos= (kk-0.2,-k-0.4,1.4,0.5,0,0,0.5)
 r.moveObject('stuff',stuff_pos)
 r(q0) # end of display
 
@@ -72,20 +71,30 @@ lockedDofs = robot.rightHandClosed ()
 for name, value in lockedDofs.iteritems ():
     cl.problem.lockDof (name, value)
 
-q1=[-2,0,0,1,0,0,0, 0.0, 0.0, 0.0, 0.0, 0.261799, 0.17453, 0.0, -0.523599, 0.0, 0.0, 0.1, 0.0, 0.0, 0.0, 0.0, 0.0, 0.261799, -0.17453, 0.0, -0.523599, 0.0, 0.0, 0.1, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -0.453786, 0.872665, -0.418879, 0.0, 0.0, 0.0, -0.453786, 0.872665, -0.418879, 0.0]
+q1=[1, 2.2, 0.64, 1, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.261799, 0.17453, 0.0, -0.523599, 0.0, 0.0, 0.1, 0.0, 0.0, 0.0, 0.0, 0.0, 0.261799, -0.17453, 0.0, -0.523599, 0.0, 0.0, 0.1, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -0.453786, 0.872665, -0.418879, 0.0, 0.0, 0.0, -0.453786, 0.872665, -0.418879, 0.0]
 q1proj = cl.problem.applyConstraints (q1)
 
-q2=[2,0,0,1,0,0,0,0.0, 0.0, 0.0, 0.0, 0.261799, 0.17453, 0.0, -0.523599, 0.0, 0.0, 0.1, 0.0, 0.0, 0.0, 0.0, 0.0, 0.261799, -0.17453, 0.0, -0.523599, 0.0, 0.0, 0.1, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -0.453786, 0.872665, -0.418879, 0.0, 0.0, 0.0, -0.453786, 0.872665, -0.418879, 0.0]
-q2proj = cl.problem.applyConstraints (q2)
+q2=[0.5, -2.2, 0.64, 1, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.261799, 0.17453, 0.0, -0.523599, 0.0, 0.0, 0.1, 0.0, 0.0, 0.0, 0.0, 0.0, 0.261799, -0.17453, 0.0, -0.523599, 0.0, 0.0, 0.1, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -0.453786, 0.872665, -0.418879, 0.0, 0.0, 0.0, -0.453786, 0.872665, -0.418879, 0.0]
+q2proj = cl.problem.applyConstraints (q2) # quat 0.5,0,0,-0.5 => assert here
 
 # Build the problem
 cl.problem.setInitialConfig (q1proj)
 cl.problem.addGoalConfig (q2proj)
 p = PathPlayer (cl, r)
-cl.problem.solve ()
+cl.problem.solve () # assert raised on quaternions (getRotation for a collision test)
 
-###TODO ADD obstacles to HPP
-
+# Add obstacles in hpp
+cl.obstacle.loadObstacleModel('room_description','room')
+cl.obstacle.moveObstacle ('armchair_base', armchair_pos)
+cl.obstacle.moveObstacle ('pc_base', pc_pos)
+cl.obstacle.moveObstacle ('desk_base', desk_pos)
+cl.obstacle.moveObstacle ('chair_base', chair_pos)
+cl.obstacle.moveObstacle ('table_base', table_pos)
+cl.obstacle.moveObstacle ('commode_base', commode_pos)
+cl.obstacle.moveObstacle ('books_base', books_pos)
+cl.obstacle.moveObstacle ('deskLamp_base', deskLamp_pos)
+cl.obstacle.moveObstacle ('beer_base', beer_pos)
+cl.obstacle.moveObstacle ('stuff_base', stuff_pos)
 
 # Nodes from the roadmap
 nodes = cl.problem.nodes ()
@@ -93,7 +102,6 @@ len(nodes)
 for n in  nodes:
     r (n)
     time.sleep (.2)
-
 
 ## DEBUG commands
 cl.obstacle.getObstaclePosition('obstacle_base')
