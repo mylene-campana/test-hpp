@@ -3,6 +3,7 @@
 from hpp_ros import ScenePublisher
 from hpp.tools import PathPlayer
 from hpp.corbaserver.hrp2 import Robot
+from hpp.corbaserver import ProblemSolver
 from hpp.corbaserver.wholebody_step.client import Client as WsClient
 
 Robot.urdfSuffix = '_capsule'
@@ -20,7 +21,9 @@ r (q0)
 wcl = WsClient ()
 wcl.problem.addStaticStabilityConstraints ("balance", q0, robot.leftAnkle,
                                            robot.rightAnkle)
-cl.problem.setNumericalConstraints ("balance", ["balance/relative-com",
+
+p = ProblemSolver (robot)
+p.setNumericalConstraints ("balance", ["balance/relative-com",
                                                 "balance/relative-orientation",
                                                 "balance/relative-position",
                                                 "balance/orientation-left-foot",
@@ -29,22 +32,22 @@ cl.problem.setNumericalConstraints ("balance", ["balance/relative-com",
 # lock hands in closed position
 lockedDofs = robot.leftHandClosed ()
 for name, value in lockedDofs.iteritems ():
-    cl.problem.lockDof (name, value)
+    p.lockDof (name, value, 0, 0)
 
 lockedDofs = robot.rightHandClosed ()
 for name, value in lockedDofs.iteritems ():
-    cl.problem.lockDof (name, value)
+    p.lockDof (name, value, 0, 0)
 
 
 q1 = [0.0, 0.0, 0.705, 1.0, 0., 0., 0.0, 0.0, 0.0, 0.0, 0.0, -0.4, 0, -1.2, -1.0, 0.0, 0.0, 0.174532, -0.174532, 0.174532, -0.174532, 0.174532, -0.174532, 0.261799, -0.17453, 0.0, -0.523599, 0.0, 0.0, 0.174532, -0.174532, 0.174532, -0.174532, 0.174532, -0.174532, 0.0, 0.0, -0.453786, 0.872665, -0.418879, 0.0, 0.0, 0.0, -0.453786, 0.872665, -0.418879, 0.0]
 
-q1proj = cl.problem.applyConstraints (q1)
+q1proj = p.applyConstraints (q1)
 
 q2 = [0.0, 0.0, 0.705, 1, 0, 0, 0, 0.0, 0.0, 0.0, 0.0, 1.0, 0, -1.4, -1.0, 0.0, 0.0, 0.174532, -0.174532, 0.174532, -0.174532, 0.174532, -0.174532, 0.261799, -0.17453, 0.0, -0.523599, 0.0, 0.0, 0.174532, -0.174532, 0.174532, -0.174532, 0.174532, -0.174532, 0.0, 0.0, -0.453786, 0.872665, -0.418879, 0.0, 0.0, 0.0, -0.453786, 0.872665, -0.418879, 0.0]
 
-q2proj = cl.problem.applyConstraints (q2)
+q2proj = p.applyConstraints (q2)
 
-cl.problem.setInitialConfig (q1proj)
-cl.problem.addGoalConfig (q2proj)
-cl.problem.solve ()
+p.setInitialConfig (q1proj)
+p.addGoalConfig (q2proj)
+p.solve ()
 
