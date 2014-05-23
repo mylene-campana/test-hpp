@@ -14,29 +14,28 @@ cl.robot.loadRobotModel ('object', 'freeflyer', 'potential_description', 'object
 cl.robot.setJointBounds('base_joint_x',[-3, 3])
 cl.robot.setJointBounds('base_joint_y',[-3, 3])
 cl.robot.setJointBounds('base_joint_z',[-0.01, 0.01])
-cl.robot.setJointBounds('base_joint_SO3',[0, 1, 0, 0, 0, 0, 0, 1]) # NOT WORKING
-cl.problem.lockDof ('base_joint_SO3', 1) # using LockedDof instead, ????????
-    
+cl.problem.lockDof ('base_joint_SO3', 0, 1, 0) # lock x rotation
+cl.problem.lockDof ('base_joint_SO3', 0, 2, 1) # lock y rotation
+
 jn = cl.robot.getJointNames ()
 r = ScenePublisher (jn [4:])
 
 q1 = [-2.5, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0]
 q2 = [2.5, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0] 
 
-
-# Display centered box obstacle
-r.addObject('obstacle','obstacle_base') # display
-r(q1)
-
 cl.problem.setInitialConfig (q1)
 cl.problem.addGoalConfig (q2)
 p = PathPlayer (cl, r)
 
+cl.problem.solve ()
+
 # Load box obstacle in HPP for collision avoidance
 cl.obstacle.loadObstacleModel('potential_description','obstacle')
 
-cl.problem.solve ()
 
+# Display centered box obstacle
+r.addObject('obstacle','obstacle_base') # display
+r(q1)
 
 
 # Nodes from the roadmap
@@ -55,7 +54,7 @@ cl.robot.getCurrentConfig()
 cl.robot.setCurrentConfig(q4)
 cl.robot.collisionTest()
 res = cl.robot.distancesToCollision()
-cl.problem.pathLength(4)
+cl.problem.pathLength(0)
 r( cl.problem.configAtDistance(1,5) )
 cl.problem.optimizePath (1)
 cl.problem.clearRoadmap ()
