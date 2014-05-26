@@ -13,7 +13,7 @@ robot = Robot ('hrp2_14')
 #robot.setTranslationBounds (-5, 10, -10, 10, -5, 5)
 robot.setTranslationBounds (-3, 10, -4, 4, -3, 5)
 cl = robot.client
-r = ScenePublisher (robot.jointNames [4:])
+r = ScenePublisher (robot)
 p = PathPlayer (cl, r)
 
 # Difficult init config

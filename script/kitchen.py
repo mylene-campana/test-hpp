@@ -14,7 +14,7 @@ robot = Robot ()
 robot.setTranslationBounds (-2, 2, -2, 2, 0, 1) # some discontinuities seem to appear in the p(0) solution
 cl = robot.client
 
-r = ScenePublisher (robot.jointNames [4:])
+r = ScenePublisher (robot)
 q0 = robot.getInitialConfig ()
 r(q0)
 

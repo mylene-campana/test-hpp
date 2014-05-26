@@ -13,7 +13,7 @@ robot = Robot ('hrp2_14')
 robot.setTranslationBounds (-4, 4, -4, 4, 0, 1)
 cl = robot.client
 
-r = ScenePublisher (robot.jointNames [4:])
+r = ScenePublisher (robot)
 q0 = robot.getInitialConfig ()
 r(q0)
 
