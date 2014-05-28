@@ -4,33 +4,33 @@
 
 from hpp_ros import ScenePublisher
 from hpp.tools import PathPlayer
-from hpp.corbaserver import Robot
+from hpp.corbaserver.simple_robot import Robot
 from hpp.corbaserver import Client
 
-cl = Client ()
-cl.robot.loadRobotModel ('object', 'freeflyer', 'potential_description', 'object','', '')
 
+robot = Robot ('simple_robot')
+cl = robot.client
 
-cl.robot.setJointBounds('base_joint_x',[-3, 3])
-cl.robot.setJointBounds('base_joint_y',[-3, 3])
-cl.robot.setJointBounds('base_joint_z',[-0.01, 0.01])
-cl.problem.lockDof ('base_joint_SO3', 0, 1, 0) # lock x rotation
-cl.problem.lockDof ('base_joint_SO3', 0, 2, 1) # lock y rotation
+robot.setJointBounds('base_joint_x',[-3, 3])
+robot.setJointBounds('base_joint_y',[-3, 3])
 
-jn = cl.robot.getJointNames ()
-r = ScenePublisher (jn [4:])
+r = ScenePublisher (robot)
 
-q1 = [-2.5, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0]
-q2 = [2.5, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0] 
+q1 = [-2.5, 1.0, 0.0] # x, y, theta
+q2 = [2.5, 1.0, 0.0]
+#q2 = [1.8, 0.9, 1.57]
 
 cl.problem.setInitialConfig (q1)
 cl.problem.addGoalConfig (q2)
 p = PathPlayer (cl, r)
 
+# Load box obstacle in HPP for collision avoidanceq
+cl.obstacle.loadObstacleModel('potential_description','obstacle')
+cl.obstacle.moveObstacle ('obstacle_base', (0,0,0,1,0,0,0)) # to update load ?
+
 cl.problem.solve ()
 
-# Load box obstacle in HPP for collision avoidance
-cl.obstacle.loadObstacleModel('potential_description','obstacle')
+# PB : saut au début de la solution (discontinuité dans theta)
 
 
 # Display centered box obstacle
@@ -56,5 +56,5 @@ cl.robot.collisionTest()
 res = cl.robot.distancesToCollision()
 cl.problem.pathLength(0)
 r( cl.problem.configAtDistance(1,5) )
-cl.problem.optimizePath (1)
+cl.problem.optimizePath (0)
 cl.problem.clearRoadmap ()

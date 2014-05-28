@@ -4,19 +4,17 @@
 
 from hpp_ros import ScenePublisher
 from hpp.tools import PathPlayer
-from hpp.corbaserver import Robot
+from hpp.corbaserver.puzzle_robot import Robot
 from hpp.corbaserver import Client
 
-cl = Client ()
-cl.robot.loadRobotModel ('object', 'freeflyer', 'puzzle_description', 'object','', '')
+robot = Robot ('puzzle_robot')
+cl = robot.client
 
+robot.setJointBounds('base_joint_x',[-0.9, 0.9])
+robot.setJointBounds('base_joint_y',[-0.9, 0.9])
+robot.setJointBounds('base_joint_z',[-1.1, 1.1])
 
-cl.robot.setJointBounds('base_joint_x',[-0.9, 0.9])
-cl.robot.setJointBounds('base_joint_y',[-0.9, 0.9])
-cl.robot.setJointBounds('base_joint_z',[-1.1, 1.1])
-
-jn = cl.robot.getJointNames ()
-r = ScenePublisher (jn [4:])
+r = ScenePublisher (robot)
 
 q1 = [0.0, 0.0, 0.6, 1.0, 0.0, 0.0, 0.0]
 q2 = [0.0, 0.0, -0.6, 1.0, 0.0, 0.0, 0.0] 
@@ -59,5 +57,5 @@ cl.robot.collisionTest()
 res = cl.robot.distancesToCollision()
 cl.problem.pathLength(0)
 r( cl.problem.configAtDistance(2,5) )
-cl.problem.optimizePath (1)
+cl.problem.optimizePath (0)
 cl.problem.clearRoadmap ()
