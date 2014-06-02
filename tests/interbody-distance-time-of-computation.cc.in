@@ -1,0 +1,107 @@
+// Copyright (C) 2014, 2014 LAAS-CNRS
+// Author: Florent Lamiraux
+//
+// This file is part of the test-hpp.
+//
+// test-hpp is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// test-hpp is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with test-hpp.  If not, see <http://www.gnu.org/licenses/>.
+
+#include <sstream>
+#include <ostream>
+#include <fstream>
+#include <vector>
+
+#include <Eigen/Core>
+
+#include <fcl/shape/geometric_shapes.h>
+
+#include <hpp/util/debug.hh>
+#include <hpp/model/body.hh>
+#include <hpp/model/collision-object.hh>
+#include <hpp/model/device.hh>
+#include <hpp/model/joint.hh>
+#include <hpp/model/urdf/util.hh>
+
+
+#define BOOST_TEST_MODULE forward_kinematics
+#include <boost/test/included/unit_test.hpp>
+
+typedef boost::shared_ptr <const fcl::Capsule> CapsuleConstPtr_t;
+typedef hpp::model::matrix_t::Scalar value_type;
+typedef hpp::model::CollisionObjectPtr_t CollisionObjectPtr_t;
+typedef hpp::model::vector3_t vector3_t;
+typedef hpp::model::DistanceResult DistanceResult_t;
+typedef hpp::model::Transform3f Transform3f;
+typedef hpp::model::vector3_t vector3_t;
+
+BOOST_AUTO_TEST_SUITE( test_suite )
+
+BOOST_AUTO_TEST_CASE (interbody_distances_time_of_computation)
+{
+  using hpp::model::Device;
+  using hpp::model::Joint;
+  using hpp::model::Body;
+  typedef hpp::model::ObjectVector_t ObjectVector_t;
+  typedef hpp::model::JointVector_t JointVector_t;
+  typedef std::vector<double> vector_t;
+  std::ifstream fileConfig;
+  vector_t::size_type configSize;
+  fileConfig.open ("@PROJECT_SOURCE_DIR@/data/configuration.data");
+  vector_t dofs;
+  bool eof = false;
+  double value;
+
+  // Read configuration file
+  while (!eof) {
+    fileConfig >> value;
+    if (fileConfig.fail ()) {
+      eof = true;
+    } else {
+      dofs.push_back (value);
+    }
+  }
+  fileConfig.close ();
+  // Load hrp2
+  hpp::model::HumanoidRobotPtr_t humanoidRobot =
+    hpp::model::HumanoidRobot::create ("hrp2_14");
+  hpp::model::urdf::loadHumanoidModel(humanoidRobot, "freeflyer",
+				      "hrp2_14_description", "hrp2_14",
+				      "_capsule", "_capsule");
+  configSize = humanoidRobot->configSize ();
+  // Check size of config
+  if (dofs.size () != configSize) {
+    std::ostringstream error;
+    error << "wrong configuration size: " << dofs.size ()
+	  << ", expecting " << configSize;
+    throw std::runtime_error (error.str ());
+  }
+  hpp::model::Configuration_t config (configSize);
+  for (vector_t::size_type i=0; i<configSize; ++i) {
+    config [i] = dofs [i];
+  }
+  humanoidRobot->currentConfiguration (config);
+  humanoidRobot->computeForwardKinematics ();
+  hppDout (info, *humanoidRobot);
+
+  timeval t0, t1;
+  gettimeofday (&t0, NULL);
+  for (std::size_t i=0; i<1000; ++i) {
+    humanoidRobot->computeDistances ();
+  }
+  gettimeofday (&t1, NULL);
+  double t = (t1.tv_sec - t0.tv_sec) + 1e-6*(t1.tv_usec - t0.tv_usec + 0.);
+  std::cout << "Time for 1000 self-collision tests in seconds: "
+	    << t << std::endl;
+}
+
+BOOST_AUTO_TEST_SUITE_END()
