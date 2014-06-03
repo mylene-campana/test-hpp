@@ -47,7 +47,10 @@ CONFIG_FILES (
   body-positions-mesh.cc
   interbody-distances-mesh.cc
   interbody-distances-capsule.cc
+  interbody-distance-time-of-computation.cc
   )
+
 ADD_TESTCASE (body-positions-mesh TRUE)
 ADD_TESTCASE (interbody-distances-mesh TRUE)
 ADD_TESTCASE (interbody-distances-capsule TRUE)
+ADD_TESTCASE (interbody-distance-time-of-computation TRUE)

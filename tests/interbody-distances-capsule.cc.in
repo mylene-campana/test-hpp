@@ -23,6 +23,8 @@
 
 #include <Eigen/Core>
 
+#include <fcl/shape/geometric_shapes.h>
+
 #include <hpp/util/debug.hh>
 #include <hpp/model/body.hh>
 #include <hpp/model/collision-object.hh>
@@ -30,8 +32,19 @@
 #include <hpp/model/joint.hh>
 #include <hpp/model/urdf/util.hh>
 
+
 #define BOOST_TEST_MODULE forward_kinematics
 #include <boost/test/included/unit_test.hpp>
+
+#define CHECK_CLOSE_TO_0(x, eps) BOOST_CHECK_CLOSE ((x + 1.0), (1.0), (eps))
+
+typedef boost::shared_ptr <const fcl::Capsule> CapsuleConstPtr_t;
+typedef hpp::model::matrix_t::Scalar value_type;
+typedef hpp::model::CollisionObjectPtr_t CollisionObjectPtr_t;
+typedef hpp::model::vector3_t vector3_t;
+typedef hpp::model::DistanceResult DistanceResult_t;
+typedef hpp::model::Transform3f Transform3f;
+typedef hpp::model::vector3_t vector3_t;
 
 static const unsigned int nbLines = 274;
 static const std::string filename
@@ -62,13 +75,13 @@ struct Distance_t {
   }
   void checkClose (const Distance_t& other)
   {
-    BOOST_CHECK (fabs (d_ - other.d_ ) < 1e-5);
-    BOOST_CHECK (fabs (x0_ - other.x0_ ) < 1e-5);
-    BOOST_CHECK (fabs (y0_ - other.y0_ ) < 1e-5);
-    BOOST_CHECK (fabs (z0_ - other.z0_ ) < 1e-5);
-    BOOST_CHECK (fabs (x1_ - other.x1_ ) < 1e-5);
-    BOOST_CHECK (fabs (y1_ - other.y1_ ) < 1e-5);
-    BOOST_CHECK (fabs (z1_ - other.z1_ ) < 1e-5);
+    BOOST_CHECK_CLOSE (d_, other.d_, 1e-0);
+    BOOST_CHECK_CLOSE (x0_, other.x0_, 1e-0);
+    BOOST_CHECK_CLOSE (y0_, other.y0_, 1e-0);
+    BOOST_CHECK_CLOSE (z0_, other.z0_, 1e-0);
+    BOOST_CHECK_CLOSE (x1_, other.x1_, 1e-0);
+    BOOST_CHECK_CLOSE (y1_, other.y1_, 1e-0);
+    BOOST_CHECK_CLOSE (z1_, other.z1_, 1e-0);
   }
   // Distance and closest points on bodies.
   double d_, x0_, y0_, z0_, x1_, y1_, z1_;
@@ -100,6 +113,66 @@ InterDistances_t readDataFile ()
     result [key2] = distance.swap ();
   }
   return  result;
+}
+
+void checkOptimalityConditions (const DistanceResult_t& distance)
+{
+  value_type d = distance.distance ();
+  const vector3_t& p1 (distance.closestPointInner ());
+  const vector3_t& p2 (distance.closestPointOuter ());
+
+  // Get capsules
+  CollisionObjectPtr_t o1 = distance.innerObject;
+  CollisionObjectPtr_t o2 = distance.outerObject;
+  CapsuleConstPtr_t c1 = HPP_DYNAMIC_PTR_CAST
+    (const fcl::Capsule, distance.innerObject->fcl ()->collisionGeometry ());
+  CapsuleConstPtr_t c2 = HPP_DYNAMIC_PTR_CAST
+    (const fcl::Capsule, distance.outerObject->fcl ()->collisionGeometry ());
+  // Get lengths and radii
+  const value_type& l1 = c1->lz;
+  const value_type& l2 = c2->lz;
+  // Get centers and directions
+  Transform3f tf1 = o1->getTransform ();
+  Transform3f tf2 = o2->getTransform ();
+  const vector3_t& center1 = tf1.getTranslation ();
+  const vector3_t& center2 = tf2.getTranslation ();
+  vector3_t dir1 = tf1.getRotation ().getColumn (2);
+  vector3_t dir2 = tf2.getRotation ().getColumn (2);
+  // Get closest point on axis
+  value_type abs1 = dir1.dot (p1 - center1);
+  value_type abs2 = dir2.dot (p2 - center2);
+  vector3_t s1, s2;
+  if (abs1 >= .5*l1) {
+    s1 = center1 + (.5*l1)*dir1;
+  } else if (abs1 <= -.5*l1) {
+    s1 = center1 - (.5*l1)*dir1;
+  } else {
+    s1 = center1 + abs1*dir1;
+  }
+  if (abs2 >= .5*l2) {
+    s2 = center2 + (.5*l2)*dir2;
+  } else if (abs2 <= -.5*l2) {
+    s2 = center2 - (.5*l2)*dir2;
+  } else {
+    s2 = center2 + abs2*dir2;
+  }
+  // Test orthogonality
+  if (abs1 >= .5*l1) {
+    BOOST_CHECK (dir1.dot (s2-s1) >= 0);
+  } else if (abs1 <= -.5*l1) {
+    BOOST_CHECK (dir1.dot (s2-s1) <= 0);
+  } else {
+    CHECK_CLOSE_TO_0 (dir1.dot (s2-s1), 1e-4);
+  }
+  if (abs2 >= .5*l2) {
+    BOOST_CHECK (dir2.dot (s1-s2) >= 0);
+  } else if (abs2 <= -.5*l2) {
+    BOOST_CHECK (dir2.dot (s1-s2) <= 0);
+  } else {
+    CHECK_CLOSE_TO_0 (dir2.dot (s1-s2), 1e-4);
+  }
+  // Test distance
+  BOOST_CHECK_CLOSE (d, (p2-p1).length (), 1e-4);
 }
 
 BOOST_AUTO_TEST_SUITE( test_suite )
@@ -168,7 +241,7 @@ BOOST_AUTO_TEST_CASE (interbody_distances_capsule)
 			 it->fcl.nearest_points [1][0],
 			 it->fcl.nearest_points [1][1],
 			 it->fcl.nearest_points [1][2]);
-			 
+
     hppDout (info, it->fcl.min_distance << ",\t"
 	     << it->innerObject->name () << ",\t"
 	     << it->outerObject->name () << ",\t"
@@ -179,15 +252,16 @@ BOOST_AUTO_TEST_CASE (interbody_distances_capsule)
 	     << it->fcl.nearest_points [1][1] << ",\t"
 	     << it->fcl.nearest_points [1][2] << ",\t");
     std::pair <std::string, std::string> key (body1, body2);
-    InterDistances_t::iterator it = interDistances.find (key);
+    InterDistances_t::iterator itMap = interDistances.find (key);
     // Check that pair of bodies is in map
-    if (it == interDistances.end ()) {
+    if (itMap == interDistances.end ()) {
       throw std::runtime_error ("pair (" + body1 + "," + body2 +
 				") is not in " + filename);
     }
-    Distance_t distanceFile = it->second;
-    hppDout (info, "Checking pair " << body1 << ", " << body2);
+    Distance_t distanceFile = itMap->second;
+    std::cerr << "Checking pair " << body1 << ", " << body2 << std::endl;
     distance.checkClose (distanceFile);
+    checkOptimalityConditions (*it);
   }
 }
 
