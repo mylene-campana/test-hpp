@@ -4,7 +4,6 @@
 from hpp_ros import ScenePublisher
 from hpp.tools import PathPlayer
 from hpp.corbaserver.hrp2 import Robot
-import time
 from hpp.corbaserver import Client
 
 Robot.urdfSuffix = '_capsule'
@@ -58,10 +57,10 @@ r.moveObject('emu',position_emu)
 r(q3)
 
 # Nodes from the roadmap
+import time
 nodes = cl.problem.nodes ()
 len(nodes)
 for n in  nodes:
-    if (
         r (n)
         time.sleep (.2)
 

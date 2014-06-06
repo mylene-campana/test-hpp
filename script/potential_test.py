@@ -17,25 +17,28 @@ robot.setJointBounds('base_joint_y',[-3, 3])
 r = ScenePublisher (robot)
 
 # q = [x, y, theta]
-q1 = [-2.5, 1.0, 0.0]
-q2 = [2.5, 1.0, 0.0]
-#q2 = [1.8, 0.9, 1.57]
+#q1 = [-2.5, 1.0, 0.0] # first test : 5.78s < SMS
+#q2 = [2.5, 1.0, 0.0]
+q1 = [-2.5, 0.0, 0.0] # second test : 17s à battre
+q2 = [2.5, 0.0, 0.0]
+#q1 = [1.8, 0.9, 1.57] # third test : 18.45s à battre
+#q2 = [-1.3, -0.6, 1.57]
 
 cl.problem.setInitialConfig (q1)
 cl.problem.addGoalConfig (q2)
 p = PathPlayer (cl, r)
 
-# Load box obstacle in HPP for collision avoidanceq
-#cl.obstacle.loadObstacleModel('potential_description','obstacle')
+# Load box obstacle in HPP for collision avoidance
+#cl.obstacle.loadObstacleModel('potential_description','obstacle') # box
 cl.obstacle.loadObstacleModel('potential_description','cylinder_obstacle')
-cl.obstacle.moveObstacle ('obstacle_base', (0,0,0,1,0,0,0)) # necessary ?
+cl.obstacle.moveObstacle ('obstacle_base', (0,0,0,1,0,0,0))
 
 cl.problem.solve ()
 
 
-
 # Display centered box obstacle
-r.addObject('obstacle','obstacle_base')
+#r.addObject('obstacle','obstacle_base') # box
+r.addObject('cylinder_obstacle','obstacle_base')
 r(q1)
 
 
@@ -52,10 +55,10 @@ for n in  nodes:
 cl.obstacle.getObstaclePosition('obstacle_base')
 cl.robot.getJointOuterObjects('base_link')
 cl.robot.getCurrentConfig()
-cl.robot.setCurrentConfig(q1)
+cl.robot.setCurrentConfig(q2)
 cl.robot.collisionTest()
 res = cl.robot.distancesToCollision()
 cl.problem.pathLength(0)
 r( cl.problem.configAtDistance(1,5) )
-cl.problem.optimizePath (0)
+cl.problem.optimizePath (1)
 cl.problem.clearRoadmap ()
