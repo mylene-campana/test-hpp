@@ -37,13 +37,9 @@ cl.problem.pathLength(0)
 cl.problem.pathLength(1)
 
 ## DEBUG commands
-cl.obstacle.getObstaclePosition('obstacle_base')
-cl.robot.getJointOuterObjects('CHEST_JOINT1')
-cl.robot.getCurrentConfig()
 cl.robot.setCurrentConfig(q1)
 cl.robot.collisionTest()
-res = cl.robot.distancesToCollision()
-cl.problem.pathLength(0)
+cl.robot.distancesToCollision()
 r( cl.problem.configAtDistance(0,5) )
 cl.problem.optimizePath (1)
 cl.problem.clearRoadmap ()
@@ -56,16 +52,13 @@ import numpy as np
 t_vec = np.arange(0., 8., 0.2)
 for t in t_vec:
     #x = configAtSize(0, t)
-    plt.plot(cl.robot.configAtDistance(0, t)[0], cl.robot.configAtDistance(0, t)[1], 'ro')
+    plt.plot(cl.robot.configAtDistance(0, t)[0], \
+                 cl.robot.configAtDistance(0, t)[1], 'ro')
 
 plt.axis([-2, 2, -2, 2]) #Xmin Xmax Ymin Ymax
 plt.xlabel('x')
 plt.ylabel('y')
 plt.show() # works only once
-
-
-for t in t_vec:
-    plt.plot(t, cl.problem.configAtDistance(0, t)[1], 'ro')
 
 
 # Plot interesting DoF (here RLeg) ###
