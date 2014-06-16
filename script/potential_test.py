@@ -6,6 +6,8 @@ from hpp_ros import ScenePublisher
 from hpp_ros import PathPlayer
 from hpp.corbaserver.simple_robot import Robot
 from hpp.corbaserver import Client
+import sys
+sys.path.append('/local/mcampana/devel/hpp/src/test-hpp/script')
 
 
 robot = Robot ('simple_robot')
@@ -67,56 +69,15 @@ cl.problem.clearRoadmap ()
 cl.problem.resetGoalConfigs ()
 
 
-# Ploting stuff ############################
-import matplotlib.pyplot as plt
-import numpy as np
-dt = 0.1
-t_vec = np.arange(0., cl.problem.pathLength(0), dt) # all
+# Plot Trajectory, x, y, dist_obst #
+from trajectory_plot import plannarPlot
+plannarPlot(cl)
 
-Tvec = t_vec [::]
-plt.subplot(221)
-circle_obst=plt.Circle((0,0),.4,color='r')
-plt.gcf().gca().add_artist(circle_obst)
-for t in Tvec:
-    plt.plot([cl.problem.configAtDistance(0, t)[1], \
-                 cl.problem.configAtDistance(0, t+dt)[1]], \
-                 [cl.problem.configAtDistance(0, t)[0], \
-                 cl.problem.configAtDistance(0, t+dt)[0]], 'k')
+# Gradient Plot from Log Parser #
+from parseLog import parseGrad
+gradAtt = parseGrad(10160, 'INFO:/local/mcampana/devel/hpp/src/hpp-core/src/potential-method.hh:156: gradAtt: ')
+gradRep = parseGrad(10160, 'INFO:/local/mcampana/devel/hpp/src/hpp-core/src/potential-method.hh:149: gradRep: ')
 
-plt.axis([-3, 3, -3, 3]) #Ymin Ymax Xmin Xmax
-plt.xlabel('y')
-plt.ylabel('x')
-plt.title('trajectory')
-plt.grid()
-plt.gca().invert_xaxis()
-plt.text(.5, -.5, r'obstacle')
+from trajectory_plot import gradientPlot
+gradientPlot(gradAtt, gradRep)
 
-plt.subplot(222)
-for t in Tvec:
-    plt.plot(t, cl.problem.configAtDistance(0, t)[0], 'ro')
-
-plt.axis([min(Tvec),max(Tvec),-3,3]) #Xmin Xmax Ymin Ymax
-plt.xlabel('t')
-plt.ylabel('x')
-plt.grid()
-
-plt.subplot(223)
-for t in Tvec:
-    plt.plot(t, cl.problem.configAtDistance(0, t)[1], 'ro')
-
-plt.axis([min(Tvec),max(Tvec),-3,3]) #Xmin Xmax Ymin Ymax
-plt.xlabel('t')
-plt.ylabel('y')
-plt.grid()
-
-plt.subplot(224)
-for t in Tvec:
-    plt.plot(t, cl.problem.configAtDistance(0, t)[2], 'ro')
-
-plt.axis([min(Tvec),max(Tvec),-3.14,3.14]) #Xmin Xmax Ymin Ymax
-plt.xlabel('t')
-plt.ylabel('theta')
-plt.grid()
-
-plt.show() # works only once
-#fig.savefig('plotcircles.png') # to save picture
