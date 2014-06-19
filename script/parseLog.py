@@ -25,4 +25,9 @@ def parseGrad (pid, prefix):
                 isNotFinished = False
     return np.array (zip (*grads)) # transpose
 
-
+"""
+gradAtt :
+_,    _,
+_,  , _,  , ....
+_,    _,
+"""
