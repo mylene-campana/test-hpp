@@ -6,7 +6,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-dt = 0.1
+dt = 0.1 # global drawing step size
 
 def plannarPlot (cl):
     t_vec = np.arange(0., cl.problem.pathLength(0), dt)
@@ -76,16 +76,17 @@ def plannarPlot (cl):
 
 # --------------------------------------------------------------------#
 
-def dofPlot (cl, n1, n2, n3, n4):
-    t_vec = np.arange(0., cl.problem.pathLength(0), dt) # all
+# Draw specified DoF(t) of the nPath (0 or 1)
+def dofPlot (cl, nPath, n1, n2, n3, n4):
+    t_vec = np.arange(0., cl.problem.pathLength(nPath), dt) # all
     t_ssvec = np.arange(4.2, 6., dt) # subvector
 
     Tvec = t_vec [::]
     plt.subplot(221)
     for t in Tvec:
-        #plt.plot(t, cl.problem.configAtDistance(0, t)[n1], 'ro')
-        plt.plot([t, t+dt], [cl.problem.configAtDistance(0, t)[n1], \
-                                 cl.problem.configAtDistance(0, t+dt)[n1]], 'k-')
+        #plt.plot(t, cl.problem.configAtDistance(nPath, t)[n1], 'ro')
+        plt.plot([t, t+dt], [cl.problem.configAtDistance(nPath, t)[n1], \
+                                 cl.problem.configAtDistance(nPath, t+dt)[n1]], 'k-')
 
     plt.axis([min(Tvec),max(Tvec),-2,2])
     plt.xlabel('t')
@@ -95,8 +96,8 @@ def dofPlot (cl, n1, n2, n3, n4):
     plt.subplot(222)
     for t in Tvec:
         #plt.plot(t, cl.problem.configAtDistance(0, t)[42], 'ro')
-        plt.plot([t, t+dt], [cl.problem.configAtDistance(0, t)[n2], \
-                                 cl.problem.configAtDistance(0, t+dt)[n2]], 'k-')
+        plt.plot([t, t+dt], [cl.problem.configAtDistance(nPath, t)[n2], \
+                                 cl.problem.configAtDistance(nPath, t+dt)[n2]], 'k-')
 
     plt.axis([min(Tvec),max(Tvec),-2,2])
     plt.xlabel('t')
@@ -106,8 +107,8 @@ def dofPlot (cl, n1, n2, n3, n4):
     plt.subplot(223)
     for t in Tvec:
         #plt.plot(t, cl.problem.configAtDistance(0, t)[43], 'ro')
-        plt.plot([t, t+dt], [cl.problem.configAtDistance(0, t)[n3], \
-                                 cl.problem.configAtDistance(0, t+dt)[n3]], 'k-')
+        plt.plot([t, t+dt], [cl.problem.configAtDistance(nPath, t)[n3], \
+                                 cl.problem.configAtDistance(nPath, t+dt)[n3]], 'k-')
 
     plt.axis([min(Tvec),max(Tvec),-2,2])
     plt.xlabel('t')
@@ -117,8 +118,8 @@ def dofPlot (cl, n1, n2, n3, n4):
     plt.subplot(224)
     for t in Tvec:
         #plt.plot(t, cl.problem.configAtDistance(0, t)[45], 'ro')
-        plt.plot([t, t+dt], [cl.problem.configAtDistance(0, t)[n4], \
-                                 cl.problem.configAtDistance(0, t+dt)[n4]], 'k-')
+        plt.plot([t, t+dt], [cl.problem.configAtDistance(nPath, t)[n4], \
+                                 cl.problem.configAtDistance(nPath, t+dt)[n4]], 'k-')
 
     plt.axis([min(Tvec),max(Tvec),-2,2])
     plt.xlabel('t')
@@ -131,6 +132,7 @@ def dofPlot (cl, n1, n2, n3, n4):
 
 # --------------------------------------------------------------------#
 
+# Draw gradAtt(t) and gradRep(t) for each x y dimension
 def gradientPlot (gradAtt, gradRep):
     t_grad = np.arange(0., len(zip(*gradAtt))-1)
 
@@ -139,7 +141,7 @@ def gradientPlot (gradAtt, gradRep):
         plt.plot([t, t+1], [gradAtt[0][t], gradAtt[0][t+1]],'g', label='gradAtt')
         plt.plot([t, t+1], [gradRep[0][t], gradRep[0][t+1]],'r', label='gradRep')
 
-    plt.axis([min(t_grad),max(t_grad),min(min(gradRep[0]),min(gradAtt[0]))-10, max(max(gradRep[0]),max(gradAtt[0]))+10])
+    plt.axis([min(t_grad),max(t_grad),min(min(gradRep[0]),min(gradAtt[0]))-5, max(max(gradRep[0]),max(gradAtt[0]))+5])
     plt.xlabel('t')
     plt.ylabel('Gradients (x) in first loop')
     plt.grid()
@@ -149,7 +151,7 @@ def gradientPlot (gradAtt, gradRep):
         plt.plot([t, t+1], [gradAtt[1][t], gradAtt[1][t+1]],'g', label='gradAtt')
         plt.plot([t, t+1], [gradRep[1][t], gradRep[1][t+1]],'r', label='gradRep')
 
-    plt.axis([min(t_grad),max(t_grad),min(min(gradRep[1]),min(gradAtt[1]))-10, max(max(gradRep[1]),max(gradAtt[1]))+10])
+    plt.axis([min(t_grad),max(t_grad),min(min(gradRep[1]),min(gradAtt[1]))-5, max(max(gradRep[1]),max(gradAtt[1]))+5])
     plt.xlabel('t')
     plt.ylabel('Gradients (y) in first loop')
     plt.grid()

@@ -1,3 +1,5 @@
+#/usr/bin/env python
+# Parser script to gather float vector from a (Log) file
 import numpy as np
 
 logFile = "/local/mcampana/devel/hpp/install/var/log/hpp/"
@@ -12,10 +14,10 @@ def parseGrad (pid, prefix):
         for line in f:
             if line [:l] == prefix and isNotFinished :
                 suffix = line [l:]
-                st = suffix.strip (',\n')
-                sp = st.split (',')
+                st = suffix.strip (',\n') # remove end characters
+                sp = st.split (',') # separate numbers
                 try:
-                    grad = map (float, sp)
+                    grad = map (float, sp) # convert into float
                     grads.append (grad)
                     
                 except:
@@ -23,7 +25,7 @@ def parseGrad (pid, prefix):
                     print ("sp=%s"%sp)
             if line[:lend] == endWhile :
                 isNotFinished = False
-    return np.array (zip (*grads)) # transpose
+    return np.array (zip (*grads)) # transpose and make array
 
 """
 gradAtt :
