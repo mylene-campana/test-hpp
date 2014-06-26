@@ -19,10 +19,10 @@ robot.setJointBounds('base_joint_y',[-3, 3])
 r = ScenePublisher (robot)
 
 # q = [x, y, theta]
-q1 = [-2.5, 1.0, 0.0]
-q2 = [2.5, 1.0, 0.0]
-#q1 = [-2.5, 0.0, 0.0]
-#q2 = [2.5, 0.0, 0.0]
+#q1 = [-2.5, 1.0, 0.0]
+#q2 = [2.5, 1.0, 0.0]
+q1 = [-2.5, 0.0, 0.0]
+q2 = [2.5, 0.0, 0.0]
 #q1 = [1.8, 0.9, 1.57]
 #q2 = [-1.3, -0.6, 1.57]
 
@@ -38,8 +38,7 @@ cl.obstacle.moveObstacle ('obstacle_base', (0,0,0,1,0,0,0))
 cl.problem.solve ()
 
 
-nodes = cl.problem.nodes ()
-len(nodes)
+len(cl.problem.nodes ())
 cl.problem.pathLength(0)
 cl.problem.pathLength(1)
 

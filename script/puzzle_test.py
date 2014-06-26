@@ -25,21 +25,23 @@ cl.problem.addGoalConfig (q2)
 p = PathPlayer (cl, r)
 
 # Load box obstacle in HPP for collision avoidance
-#cl.obstacle.loadObstacleModel('puzzle_description','decor')
-cl.obstacle.loadObstacleModel('puzzle_description','decor_easy')
+cl.obstacle.loadObstacleModel('puzzle_description','decor')
+#cl.obstacle.loadObstacleModel('puzzle_description','decor_easy')
 
 cl.problem.solve ()
 
 
 # (Optional if environment ready) Display obstacle
 r.addObject('decor','decor_base') # display
+r.addObject('decor1','l_decor_one')
+r.addObject('decor2','l_decor_two')
+r.addObject('decor3','l_decor_three')
 r(q1)
 
 
-nodes = cl.problem.nodes ()
-len(nodes)
-cl.problem.pathLength(2)
-cl.problem.pathLength(3)
+len(cl.problem.nodes ())
+cl.problem.pathLength(0)
+cl.problem.pathLength(1)
 
 # Nodes from the roadmap
 import time
