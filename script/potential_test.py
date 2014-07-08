@@ -21,10 +21,10 @@ r = ScenePublisher (robot)
 # q = [x, y, theta]
 #q1 = [-2.5, 1.0, 0.0]
 #q2 = [2.5, 1.0, 0.0]
-q1 = [-2.5, 0.0, 0.0]
-q2 = [2.5, 0.0, 0.0]
-#q1 = [1.8, 0.9, 1.57]
-#q2 = [-1.3, -0.6, 1.57]
+#q1 = [-2.5, 0.0, 0.0]
+#q2 = [2.5, 0.0, 0.0]
+q1 = [1.8, 0.9, 1.57]
+q2 = [-1.3, -0.6, 1.57]
 
 cl.problem.setInitialConfig (q1)
 cl.problem.addGoalConfig (q2)
@@ -84,13 +84,12 @@ gradRep = parseGrad(5901, \
 gradientPlot(gradAtt, gradRep)
 
 # Gradients arrows Plot on 2D plan graph (with trajectory) #
-from parseLog import parseGrad
+from parseLog import parseGrad, parseConfig
 from trajectory_plot import gradArrowsPlot
-num_log = 14760 # TO_FILL
-q_list = parseGrad(num_log, \
-'INFO:/local/mcampana/devel/hpp/src/hpp-core/src/potential-method.hh:470: q(x,y): ')
+num_log = 31613 # TO_FILL
+q_list = parseConfig(num_log, \
+'INFO:/local/mcampana/devel/hpp/src/hpp-core/src/potential-method.hh:502: q(x,y): ')
 grad_list = parseGrad(num_log, \
-'INFO:/local/mcampana/devel/hpp/src/hpp-core/src/potential-method.hh:471: grad(x,y): ')
+'INFO:/local/mcampana/devel/hpp/src/hpp-core/src/potential-method.hh:506: grad(x,y): ')
 gradArrowsPlot(cl, q_list, grad_list)
-# arrow size *2 for more visibility !
 

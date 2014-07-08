@@ -4,7 +4,9 @@
 # the problem.
 
 import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
 import numpy as np
+import math
 
 dt = 0.1 # global drawing step size
 
@@ -13,7 +15,7 @@ def plannarPlot (cl):
 
     Tvec = t_vec [::]
     plt.subplot(221)
-    circle_obst=plt.Circle((0,0),.4,color='r')
+    circle_obst=plt.Circle((0,0),.5,color='r')
     plt.gcf().gca().add_artist(circle_obst)
     i = 0
     for n in cl.problem.nodes() :
@@ -72,7 +74,7 @@ def plannarPlot (cl):
     plt.grid()
 
     plt.show()
-    #fig.savefig('plannarPlot.png')
+    plt.figure().savefig('plannarPlot.png')
 
 # --------------------------------------------------------------------#
 
@@ -168,7 +170,78 @@ def gradArrowsPlot(cl, q_list, grad_list):
     # Trajectory, obstacle, RM nodes stuff :
     t_vec = np.arange(0., cl.problem.pathLength(0), dt)
     Tvec = t_vec [::]
-    circle_obst=plt.Circle((0,0),.4,color='r')
+    circle_obst=plt.Circle((0,0),.5,color='r')
+    plt.gcf().gca().add_artist(circle_obst)
+    i = 0
+    for n in cl.problem.nodes() :
+        plt.plot(n[1], n[0], 'ro')
+        if i>1: # avoid 2 first nodes (init and goal)
+            plt.text(n[1]+.01, n[0], r'q_rand %i' %(i), fontsize=7)
+        i=i+1
+
+    for t in Tvec:
+        plt.plot([cl.problem.configAtDistance(0, t)[1], \
+                     cl.problem.configAtDistance(0, t+dt)[1]], \
+                     [cl.problem.configAtDistance(0, t)[0], \
+                     cl.problem.configAtDistance(0, t+dt)[0]], 'b', \
+                     label="trajectory" if t==0. else "")
+
+    plt.axis([-3, 3, -3, 3])
+    plt.xlabel('y'); plt.ylabel('x')
+    plt.title('Trajectory and gradients'); plt.text(0, 0, r'obstacle')
+    plt.grid(); plt.legend(); plt.gca().invert_xaxis()
+    plt.text(cl.problem.nodes()[0][1]+.2, cl.problem.nodes()[0][0]+.15, r'q_init')
+    plt.text(cl.problem.nodes()[1][1]+.2, cl.problem.nodes()[1][0]+.15, r'q_end')
+    
+    # Gradients Arrows stuff :
+    # formats : q_list[x, y, theta][t] and grad_list[x, y, theta][t]
+    i=0; thres1=0.8; thres2=1.; thres3=1.3
+    boolPlot1=True; boolPlot2=True; boolPlot3=True; boolPlot4=True
+    for q in zip(*q_list) :
+        #print q
+        x = q[0]
+        y = q[1]
+        dist = math.sqrt(x**2+y**2)
+        
+        if (dist <= thres1):
+            dx = grad_list[0][i]*0.01
+            dy = grad_list[1][i]*0.01
+            arrow1=plt.arrow(y, x, dy, dx, lw=0.8,head_width=.015, head_length=0.025, fc='y', ec='y', label="arrow1" if boolPlot1 else "")
+            boolPlot1=False
+        
+        elif (dist > thres1 and dist <= thres2):
+            dx = grad_list[0][i]*0.07
+            dy = grad_list[1][i]*0.07
+            arrow2=plt.arrow(y, x, dy, dx, lw=0.8,head_width=.015, head_length=0.025, fc='0.9', ec='0.9', label="arrow2" if boolPlot2 else "")
+            boolPlot2=False
+        
+        elif (dist > thres2 and dist <= thres3):
+            dx = grad_list[0][i]*0.8
+            dy = grad_list[1][i]*0.8
+            arrow3=plt.arrow(y, x, dy, dx, lw=0.8,head_width=.015, head_length=0.025, fc='0.7', ec='0.7', label="arrow3" if boolPlot3 else "")
+            boolPlot3=False
+        
+        elif (dist > thres3):
+            dx = grad_list[0][i]*1.5
+            dy = grad_list[1][i]*1.5       
+            arrow4=plt.arrow(y, x, dy, dx, lw=0.8,head_width=.015, head_length=0.025, fc='0.5', ec='0.5', label="arrow4" if boolPlot4 else "")
+            boolPlot4=False
+        i=i+1
+    
+    plt.legend([arrow1, arrow2, arrow3, arrow4], ['coef=0.01, thres=0.8', 'coef 0.07, thres=1', 'coef 0.8, thres=1.3', 'coef 1.5'])
+    plt.show()
+    #fig.savefig('gradientsArrowsPlot.png')
+
+# --------------------------------------------------------------------#
+
+# 3D plot of translations :
+def xyzPlot (cl):
+    t_vec = np.arange(0., cl.problem.pathLength(0), dt)
+    ax = plt.figure().gca(projection='3d')
+
+    Tvec = t_vec [::]
+    plt.subplot(221)
+    circle_obst=plt.Circle((0,0),.5,color='r')
     plt.gcf().gca().add_artist(circle_obst)
     i = 0
     for n in cl.problem.nodes() :
@@ -183,7 +256,7 @@ def gradArrowsPlot(cl, q_list, grad_list):
                      [cl.problem.configAtDistance(0, t)[0], \
                      cl.problem.configAtDistance(0, t+dt)[0]], 'b')
 
-    plt.axis([-5, 5, -5, 5])
+    plt.axis([-3, 3, -3, 3]) #Ymin Ymax Xmin Xmax
     plt.xlabel('y')
     plt.ylabel('x')
     plt.title('trajectory')
@@ -192,21 +265,41 @@ def gradArrowsPlot(cl, q_list, grad_list):
     plt.text(.5, -.5, r'obstacle')
     plt.text(cl.problem.nodes()[0][1]+.2, cl.problem.nodes()[0][0]+.1, r'q_init')
     plt.text(cl.problem.nodes()[1][1]+.2, cl.problem.nodes()[1][0]+.1, r'q_end')
-    
-    # Gradients Arrows stuff :
-    # format : q_list[x, y, theta][t]
-    # format : grad_list[x, y, theta][t]
-    i=0
-    for q in zip(*q_list) :
-        print q
-        x = q[0]# verifier len(q)=3
-        y = q[1]
-        dx = grad_list[0][i]*2
-        dy = grad_list[1][i]*2
-        plt.arrow(y, x, dy, dx, shape='full', lw=0.8, length_includes_head=True, \
-         head_width=.015, head_length=0.03)
-        i=i+1
+
+    plt.subplot(222)
+    for t in Tvec:
+        #plt.plot(t, cl.problem.configAtDistance(0, t)[0], 'ro')
+        plt.plot([t, t+dt], [cl.problem.configAtDistance(0, t)[0], \
+                                 cl.problem.configAtDistance(0, t+dt)[0]], 'k-')
+
+    plt.axis([min(Tvec),max(Tvec),-3,3])
+    plt.xlabel('t')
+    plt.ylabel('x')
+    plt.grid()
+
+    plt.subplot(223)
+    for t in Tvec:
+        #plt.plot(t, cl.problem.configAtDistance(0, t)[1], 'ro')
+        plt.plot([t, t+dt], [cl.problem.configAtDistance(0, t)[1], \
+                                 cl.problem.configAtDistance(0, t+dt)[1]], 'k-')
+
+    plt.axis([min(Tvec),max(Tvec),-3,3])
+    plt.xlabel('t')
+    plt.ylabel('y')
+    plt.grid()
+
+    plt.subplot(224)
+    for t in Tvec:
+        #plt.plot(t, cl.problem.configAtDistance(0, t)[2], 'ro') #theta
+        cl.robot.setCurrentConfig(cl.problem.configAtDistance(0,t))
+        plt.plot(t, cl.robot.distancesToCollision()[0], '.')
+
+    plt.axis([min(Tvec),max(Tvec),-0.1,3.2])
+    plt.xlabel('t')
+    plt.ylabel('distance_obst')
+    plt.grid()
+    ax.plot(x, y, z, label='parametric curve') # 3D
+    # ax.legend() # 3D
 
     plt.show()
-    #fig.savefig('gradientsArrowsPlot.png')
-
+    fig.savefig('plannarPlot.png')  # plt.figure().savefig('plannarPlot.png')

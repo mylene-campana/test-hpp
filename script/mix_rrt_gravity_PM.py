@@ -6,6 +6,7 @@ from hpp_ros import ScenePublisher
 from hpp_ros import PathPlayer
 from hpp.corbaserver.hrp2 import Robot
 #from hpp.corbaserver.humain import Robot
+from hpp.corbaserver import ProblemSolver
 from hpp.corbaserver import Client
 import sys
 sys.path.append('/local/mcampana/devel/hpp/src/test-hpp/script')
@@ -14,24 +15,32 @@ Robot.urdfSuffix = '_capsule'
 Robot.srdfSuffix= '_capsule'
 robot = Robot ('hrp2_14')
 #robot = Robot ('humain')
-robot.setTranslationBounds (-1, 1, -1, 1, 0.605, 0.805) # rrtTest v1
-#robot.setTranslationBounds (-3, 10, -4, 4, -3, 5) # gravity
 cl = robot.client
+ps = ProblemSolver (robot)
 r = ScenePublisher (robot)
 p = PathPlayer (cl, r)
+robot.setTranslationBounds (-1, 1, -1, 1, 0.605, 0.805) # rrtTest v1
+#robot.setTranslationBounds (-3, 10, -4, 4, -3, 5) # gravity
 
 q1 = [0.0, 0.0, 0.705, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -0.4, 0, -1.2, -1.0, 0.0, 0.0, 0.174532, -0.174532, 0.174532, -0.174532, 0.174532, -0.174532, 0.261799, -0.17453, 0.0, -0.523599, 0.0, 0.0, 0.174532, -0.174532, 0.174532, -0.174532, 0.174532, -0.174532, 0.0, 0.0, -0.453786, 0.872665, -0.418879, 0.0, 0.0, 0.0, -0.453786, 0.872665, -0.418879, 0.0]
 
 q2 = [0.0, 0.0, 0.705, 1, 0, 0, 0, 0.0, 0.0, 0.0, 0.0, 1.0, 0, -1.4, -1.0, 0.0, 0.0, 0.174532, -0.174532, 0.174532, -0.174532, 0.174532, -0.174532, 0.261799, -0.17453, 0.0, -0.523599, 0.0, 0.0, 0.174532, -0.174532, 0.174532, -0.174532, 0.174532, -0.174532, 0.0, 0.0, -0.453786, 0.872665, -0.418879, 0.0, 0.0, 0.0, -0.453786, 0.872665, -0.418879, 0.0]
 
-cl.problem.lockDof ('base_joint_x', 0, 0, 0) # lock x rotation
-cl.problem.lockDof ('base_joint_y', 0, 0, 0) # lock y rotation
-cl.problem.lockDof ('base_joint_z', 0.705, 0, 0) # lock z rotation
+# lock translations and hands in closed position
+ps.lockDof ('base_joint_x', 0, 0, 0)
+ps.lockDof ('base_joint_y', 0, 0, 0)
+ps.lockDof ('base_joint_z', 0.705, 0, 0)
+lockedDofs = robot.leftHandClosed ()
+for name, value in lockedDofs.iteritems ():
+    ps.lockDof (name, value, 0, 0)
 
-cl.problem.setInitialConfig (q1)
-cl.problem.addGoalConfig (q2)
-cl.problem.solve ()
+lockedDofs = robot.rightHandClosed ()
+for name, value in lockedDofs.iteritems ():
+    ps.lockDof (name, value, 0, 0)
 
+ps.setInitialConfig (q11)
+ps.addGoalConfig (q22)
+ps.solve ()
 
 """ Case HRP2 is planar (change type in hpp-hrp2/src/robot.py)
 q11 = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -0.4, 0, -1.2, -1.0, 0.0, 0.0, 0.174532, -0.174532, 0.174532, -0.174532, 0.174532, -0.174532, 0.261799, -0.17453, 0.0, -0.523599, 0.0, 0.0, 0.174532, -0.174532, 0.174532, -0.174532, 0.174532, -0.174532, 0.0, 0.0, -0.453786, 0.872665, -0.418879, 0.0, 0.0, 0.0, -0.453786, 0.872665, -0.418879, 0.0]
@@ -41,15 +50,15 @@ q22 = [0.0, 0.0, 0, 0.0, 0.0, 0.0, 0.0, 1.0, 0, -1.4, -1.0, 0.0, 0.0, 0.174532, 
 cl.problem.lockDof ('base_joint_x', 0, 0, 0) # lock x rotation
 cl.problem.lockDof ('base_joint_y', 0, 0, 0) # lock y rotation
 cl.problem.lockDof ('base_joint_rz', 0, 0, 0) # lock rz rotation
+cl.robot.setJointBounds ('base_joint_rz', [-3.14160 , 3.14158])
+cl.robot.setJointBounds ('base_joint_x', [-0.1 , 0.1])
+cl.robot.setJointBounds ('base_joint_y', [-0.1 , 0.1])
 """
-
 
 # Number of Nodes and time information
 len(cl.problem.nodes ())
 cl.problem.pathLength(0)
 cl.problem.pathLength(1)
-
-cl.problem.configAtDistance(0, 0.5)
 
 # Display Nodes from the roadmap
 import time
