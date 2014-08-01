@@ -17,8 +17,9 @@ robot.setJointBounds('base_joint_z',[-1.1, 1.1])
 r = ScenePublisher (robot)
 
 q1 = [0.0, 0.0, 0.6, 1.0, 0.0, 0.0, 0.0]
+#q2 = [0.0, 0.3, 0.0, 0.7071067812, 0.0, 0.0, 0.7071067812] # easier
 q2 = [0.0, 0.0, -0.6, 1.0, 0.0, 0.0, 0.0] 
-#q3 = [0.0, 0.0, -0.6, 0.707, 0.0, 0.0, 0.707]
+#q2 = [0.0, 0.0, -0.6, 0.707, 0.0, 0.0, 0.707]
 
 cl.problem.setInitialConfig (q1)
 cl.problem.addGoalConfig (q2)
@@ -31,12 +32,14 @@ cl.obstacle.loadObstacleModel('puzzle_description','decor_very_easy')
 
 cl.problem.solve ()
 
+
 len(cl.problem.nodes ())
-
 cl.problem.pathLength(0)
-cl.problem.pathLength(1)
 
-r( cl.problem.nodes ()[0] )
+from trajectory_plot import xyzPlot
+pathNum = 0
+xyzPlot (cl, pathNum)
+
 
 # (Optional if environment ready) Display obstacle
 r.addObject('decor','decor_base') # display
@@ -44,10 +47,6 @@ r.addObject('decor1','l_decor_one')
 r.addObject('decor2','l_decor_two')
 r.addObject('decor3','l_decor_three')
 r(q1)
-
-len(cl.problem.nodes ())
-cl.problem.pathLength(0)
-cl.problem.pathLength(1)
 
 # Nodes from the roadmap
 import time
