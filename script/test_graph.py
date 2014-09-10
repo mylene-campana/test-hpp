@@ -25,6 +25,7 @@ q2=[0.2561522768052704, 0.009968182216397094, -0.0013343337623677983, 0.98222000
 q3=[0.2561522768052704, 0.009968182216397017, -0.0013072533849402136, 0.9822384333854748, -0.01312068217341367, 0.06461437559545073, 0.17567154051286343, 0.35191845881842604, 0.5584191613132159, -0.00014417077050741273, 0.003264525687460523, 0.2869014360284614, 0.01968512963006628, 0.47563871278773184, 0.0349066, 0.4823374727974044, 0.5253128675582199, 0.00028141477557467405, -9.224156430856334e-05, 9.57339438119022e-05, 0.00043012512285501805, 9.464640215865539e-05, -0.00027454688131241776, -0.08070554282100409, -0.0022150673918241194, 0.0013507126487957277, -0.031445080182081316, 0.00013303660804169588, -0.0063951082465386055, 0.00018071522532470678, -7.008398345853373e-05, 0.0001432918466161822, 5.0663492959904484e-05, 5.932458587315774e-05, -0.0001501990824631989, -0.0016207277515218107, 0.008331445043308924, -0.1782202190053313, -0.0349066, 0.08120820667180957, -0.004973436857255375, -0.0016211611493169267, 0.008328178972275535, -0.17768239866563243, -0.03490564559358417, 0.08066263806839956, -0.00497014215842449, -0.2561522768052704, -0.009968182216396924, 0.33990778262561817, 0.8920410834920809, 0.03081996727219969, -0.37686669705702674, -0.2475567159843218]
 
 p = ProblemSolver (robot)
+p.createPreGrasp ('left-hand-pregrasp', 'hrp2/leftHand', 'screw_gun/handle2')
 p.createGrasp ('left-hand-grasp', 'hrp2/leftHand', 'screw_gun/handle2')
 p.createLockedDofConstraint ('screwgun_lock_x' , 'screw_gun/base_joint_x'  , 0, 0, 0)
 p.createLockedDofConstraint ('screwgun_lock_y' , 'screw_gun/base_joint_y'  , 0, 0, 0)
@@ -47,16 +48,25 @@ id = dict()
 id["graph"   ] = graph.createGraph ('hrp2-screwgun')
 id["subgraph"] = graph.createSubGraph ('lefthand')
 id["screwgun"] = graph.createNode (id["subgraph"], 'screwgun')
+id["prescrewgun"] = graph.createNode (id["subgraph"], 'prescrewgun')
 id["free"    ] = graph.createNode (id["subgraph"], 'free')
-id["ungrasp"] = graph.createEdge (id["screwgun"], id["free"], "ungrasp", 1)
-id[  "grasp"] = graph.createEdge (id["free"], id["screwgun"],   "grasp", 4)
-id["move_free" ] = graph.createEdge (id["free"    ], id["free"    ], "move_free", 1)
-id["keep_grasp"] = graph.createEdge (id["screwgun"], id["screwgun"], "keep_grasp", 4)
+id["unpregrasp"] = graph.createEdge (id["prescrewgun"], id["free"], "unpregrasp", 1, False)
+id[  "pregrasp"] = graph.createEdge (id["free"], id["prescrewgun"],   "pregrasp", 10, True)
+id["ungrasp"] = graph.createEdge (id["screwgun"], id["prescrewgun"], "ungrasp", 1, False)
+id[  "grasp"] = graph.createEdge (id["prescrewgun"], id["screwgun"],   "grasp", 10, True)
 
+id["move_free" ] = graph.createEdge (id["free"    ], id["free"    ], "move_free", 1, False)
+id["keep_grasp"] = graph.createEdge (id["screwgun"], id["screwgun"], "keep_grasp", 10, False)
+id["keep_align"] = graph.createEdge (id["prescrewgun"], id["prescrewgun"], "keep_align", 1, False)
+
+graph.setNumericalConstraints (id["prescrewgun"], ['left-hand-pregrasp'])
 graph.setNumericalConstraints (id["screwgun"], ['left-hand-grasp'])
 graph.setLockedDofConstraints (id["move_free"], lockscrewgun)
+graph.setLockedDofConstraints (id["pregrasp"], lockscrewgun)
+graph.setLockedDofConstraints (id["unpregrasp"], lockscrewgun)
 graph.setLockedDofConstraints (id["grasp"], lockscrewgun)
 graph.setLockedDofConstraints (id["ungrasp"], lockscrewgun)
+graph.setLockedDofConstraints (id["keep_align"], lockscrewgun)
 graph.setNumericalConstraints (id["graph"], p.balanceConstraints ())
 
 manip = robot.client.manipulation
