@@ -6,6 +6,9 @@ from hpp_ros import ScenePublisher
 from hpp_ros import PathPlayer
 from hpp.corbaserver.puzzle_robot import Robot
 from hpp.corbaserver import Client
+import time
+import sys
+sys.path.append('/local/mcampana/devel/hpp/src/test-hpp/script')
 
 robot = Robot ('puzzle_robot')
 cl = robot.client
@@ -17,29 +20,35 @@ robot.setJointBounds('base_joint_z',[-1.1, 1.1])
 r = ScenePublisher (robot)
 
 q1 = [0.0, 0.0, 0.6, 1.0, 0.0, 0.0, 0.0]
-#q2 = [0.0, 0.3, 0.0, 0.7071067812, 0.0, 0.0, 0.7071067812] # easier
 q2 = [0.0, 0.0, -0.6, 1.0, 0.0, 0.0, 0.0] 
-#q2 = [0.0, 0.0, -0.6, 0.707, 0.0, 0.0, 0.707]
 
 cl.problem.setInitialConfig (q1)
 cl.problem.addGoalConfig (q2)
 p = PathPlayer (cl, r)
 
 # Load box obstacle in HPP for collision avoidance
-#cl.obstacle.loadObstacleModel('puzzle_description','decor')
-#cl.obstacle.loadObstacleModel('puzzle_description','decor_easy')
-cl.obstacle.loadObstacleModel('puzzle_description','decor_very_easy')
+cl.obstacle.loadObstacleModel('puzzle_description','decor_very_easy','')
 
+begin=time.time()
 cl.problem.solve ()
+end=time.time()
+print "Solving time: "+str(end-begin)
 
 
 len(cl.problem.nodes ())
 cl.problem.pathLength(0)
 
+cl.problem.optimizePath (0)
+
 from trajectory_plot import xyzPlot
 pathNum = 0
 xyzPlot (cl, pathNum)
 
+#-----------------------------------------------------------------------#
+#q2 = [0.0, 0.0, -0.6, 0.707, 0.0, 0.0, 0.707]
+
+#cl.obstacle.loadObstacleModel('puzzle_description','decor','')
+#cl.obstacle.loadObstacleModel('puzzle_description','decor_easy','')
 
 # (Optional if environment ready) Display obstacle
 r.addObject('decor','decor_base') # display

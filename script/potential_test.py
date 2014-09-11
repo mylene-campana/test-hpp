@@ -9,6 +9,7 @@ from hpp_ros import ScenePublisher
 from hpp_ros import PathPlayer
 from hpp.corbaserver.simple_robot import Robot
 from hpp.corbaserver import Client
+import time
 import sys
 sys.path.append('/local/mcampana/devel/hpp/src/test-hpp/script')
 
@@ -24,6 +25,7 @@ r = ScenePublisher (robot)
 
 # q = [x, y, theta] #
 #q1 = [-2.5, 1.0, 0.0]; q2 = [2.5, 1.0, 0.0] # First
+#q1 = [-1.8, 0.3, 0.0]; q2 = [1.8, 0.3, 0.0] # First Point
 #q1 = [-2.5, 0.0, 0.0]; q2 = [2.5, 0.0, 0.0] # Second
 #q1 = [1.8, 0.9, 1.57]; q2 = [-1.3, -0.6, 1.57] # Third
 #q1 = [-4, 4, 0]; q2 = [4, -4, 0] # obstS 1
@@ -34,12 +36,13 @@ cl.problem.addGoalConfig (q2)
 p = PathPlayer (cl, r)
 
 # Load box obstacle in HPP for collision avoidance #
-#cl.obstacle.loadObstacleModel('potential_description','obstacle') # box
-#cl.obstacle.loadObstacleModel('potential_description','cylinder_obstacle')
-#cl.obstacle.loadObstacleModel('potential_description','obstacles')
-cl.obstacle.loadObstacleModel('potential_description','obstacles_concaves')
-
+#cl.obstacle.loadObstacleModel('potential_description','cylinder_obstacle','')
+cl.obstacle.loadObstacleModel('potential_description','obstacles_concaves','')
+begin=time.time()
 cl.problem.solve ()
+end=time.time()
+print "Solving time: "+str(end-begin)
+
 
 from trajectory_plot import planarConcObstaclesPlot # case multiple concaves obstacles
 planarConcObstaclesPlot(cl, 0, '', 0)
@@ -82,30 +85,22 @@ cl.problem.resetGoalConfigs ()
 
 
 # Plot Trajectory, x, y, dist_obst #
-from trajectory_plot import plannarPlot 
-plannarPlot(cl)
-from trajectory_plot import planarObstaclesPlot # case multiple obstacles
-planarObstaclesPlot(cl, 0, '', 0)
 from trajectory_plot import planarConcObstaclesPlot # case multiple concaves obstacles
 planarConcObstaclesPlot(cl, 0, '', 0)
 
 # Gradients arrows Plot on 2D plan graph (with trajectory) #
 from parseLog import parseGrad, parseConfig
-from trajectory_plot import gradArrowsPlot
-num_log = 13318 # TO_FILL, and UPDATE following line numbers
-#q_list = parseConfig(num_log, 'INFO:/local/mcampana/devel/hpp/src/hpp-core/src/potential-method.hh:502: q(x,y): ')
-#grad_list = parseGrad(num_log, 'INFO:/local/mcampana/devel/hpp/src/hpp-core/src/potential-method.hh:506: grad(x,y): ')
-q_list = parseConfig(num_log, 'INFO:/local/mcampana/devel/hpp/src/hpp-core/src/superposed-potential-method.cc:411: q(x,y): ')
-q_rand_list = parseConfig(num_log, 'INFO:/local/mcampana/devel/hpp/src/hpp-core/src/superposed-planner.cc:120: q_rand = ') # may be empty
-grad_list = parseGrad(num_log, 'INFO:/local/mcampana/devel/hpp/src/hpp-core/src/superposed-potential-method.cc:413: grad(x,y): ')
+num_log = 10435 # TO_FILL, and UPDATE following line numbers
+q_list = parseConfig(num_log, 'INFO:/local/mcampana/devel/hpp/src/hpp-core/src/potential-method.cc:381: q(x,y): ')
+grad_list = parseGrad(num_log, 'INFO:/local/mcampana/devel/hpp/src/hpp-core/src/potential-method.cc:383: grad(x,y): ')
+q_rand_list = parseConfig(num_log, 'INFO:/local/mcampana/devel/hpp/src/hpp-core/src/diffusing-planner.cc:121: q_rand = ') # diffusingPlanner
+#q_list = parseConfig(num_log, 'INFO:/local/mcampana/devel/hpp/src/hpp-core/src/superposed-potential-method.cc:???: q(x,y): ')
+#grad_list = parseGrad(num_log, 'INFO:/local/mcampana/devel/hpp/src/hpp-core/src/superposed-potential-method.cc:???: grad(x,y): ')
+#q_rand_list = parseConfig(num_log, 'INFO:/local/mcampana/devel/hpp/src/hpp-core/src/superposed-planner.cc:105: q_rand = ') # superposedPlanner
+
+from trajectory_plot import gradArrowsConcPlot # concave
+gradArrowsConcPlot(cl, q_list, grad_list, q_rand_list, 0)
+
+from trajectory_plot import gradArrowsPlot # cylinder
 gradArrowsPlot(cl, q_list, grad_list, q_rand_list)
 
-
-# q_rands de obstacleS2 :
-qr1 = [-2.31801,3.92034,0.277004] # fail 1600 iters
-qr2 = [-0.105368,-2.76147,-2.16115] # dij_ < 0
-qr3 = [-1.56923,1.30571,-0.298299] # fail 1600 iters
-qr4 = [-0.768075,-1.25183,2.28836] # fail 1600 iters
-# 1799 shoots in collision 
-qr5 = [-0.0354639,-3.88197,1.7024] # fail 1600 iters
-qr6 = [3.55087,0.252905,-2.67904]
