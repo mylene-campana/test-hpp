@@ -2,7 +2,6 @@ from hpp.corbaserver.manipulation.hrp2 import Robot
 from hpp.corbaserver.manipulation import ProblemSolver
 from scene_publisher3b import ScenePublisher as MultiRobotPub
 
-#Robot.urdfSuffix = '_capsule_mesh_hands_fixed'
 Robot.urdfSuffix = '_capsule_mesh'
 Robot.srdfSuffix = '_mathieu'
 
@@ -29,30 +28,26 @@ qinit=[6.351445422051578e-15, -7.64857075802911e-16, -0.00010650933265040068, 0.
 #qgoal=
 
 p = ProblemSolver (robot)
-p.createPreGrasp ('left-hand-pregrasp', 'hrp2/leftHand', 'screw_gun/handle2')
-p.createPreGrasp ('left-hand-pregrasp-passive', 'hrp2/leftHand', 'screw_gun/handle2')
 p.createGrasp ('left-hand-grasp', 'hrp2/leftHand', 'screw_gun/handle2')
 p.createGrasp ('left-hand-grasp-passive', 'hrp2/leftHand', 'screw_gun/handle2')
-p.createLockedDofConstraint ('screwgun_lock_x' , 'screw_gun/base_joint_x'  , 0, 0, 0)
-p.createLockedDofConstraint ('screwgun_lock_y' , 'screw_gun/base_joint_y'  , 0, 0, 0)
-p.createLockedDofConstraint ('screwgun_lock_z' , 'screw_gun/base_joint_z'  , 0, 0, 0)
-p.createLockedDofConstraint ('screwgun_lock_rx', 'screw_gun/base_joint_SO3', 0, 1, 0)
-p.createLockedDofConstraint ('screwgun_lock_ry', 'screw_gun/base_joint_SO3', 0, 2, 1)
-p.createLockedDofConstraint ('screwgun_lock_rz', 'screw_gun/base_joint_SO3', 0, 3, 2)
+rankcfg = 1; rankvel = 0; lockscrewgun = list ();
+for axis in ['x','y','z']:
+  p.createLockedDofConstraint ('screwgun_lock_'  + axis, 'screw_gun/base_joint_' + axis, 0, 0, 0)
+  p.createLockedDofConstraint ('screwgun_lock_r' + axis, 'screw_gun/base_joint_SO3', 0, rankcfg, rankvel)
+  p.isLockedDofParametric ('screwgun_lock_'  + axis ,True)
+  p.isLockedDofParametric ('screwgun_lock_r' + axis ,True)
+  lockscrewgun.append ('screwgun_lock_'  + axis)
+  lockscrewgun.append ('screwgun_lock_r' + axis)
+  rankcfg = rankcfg + 1
+  rankvel = rankvel + 1
+
+locklhand = ['larm_6','lhand_0','lhand_1','lhand_2','lhand_3','lhand_4']
 p.createLockedDofConstraint ('larm_6' , 'hrp2/LARM_JOINT6' , q1[17], 0, 0)
 p.createLockedDofConstraint ('lhand_0', 'hrp2/LHAND_JOINT0', q1[18], 0, 0)
 p.createLockedDofConstraint ('lhand_1', 'hrp2/LHAND_JOINT1', q1[19], 0, 0)
 p.createLockedDofConstraint ('lhand_2', 'hrp2/LHAND_JOINT2', q1[20], 0, 0)
 p.createLockedDofConstraint ('lhand_3', 'hrp2/LHAND_JOINT3', q1[21], 0, 0)
 p.createLockedDofConstraint ('lhand_4', 'hrp2/LHAND_JOINT4', q1[22], 0, 0)
-p.isLockedDofParametric ('screwgun_lock_x' ,True)
-p.isLockedDofParametric ('screwgun_lock_y' ,True)
-p.isLockedDofParametric ('screwgun_lock_z' ,True)
-p.isLockedDofParametric ('screwgun_lock_rx',True)
-p.isLockedDofParametric ('screwgun_lock_ry',True)
-p.isLockedDofParametric ('screwgun_lock_rz',True)
-lockscrewgun = ['screwgun_lock_x', 'screwgun_lock_y', 'screwgun_lock_z', 'screwgun_lock_rx', 'screwgun_lock_ry', 'screwgun_lock_rz']
-locklhand = ['larm_6','lhand_0','lhand_1','lhand_2','lhand_3','lhand_4']
 
 jointNames = dict ()
 jointNames['all'] = robot.getJointNames ()
@@ -64,39 +59,38 @@ for n in jointNames['all']:
   if not n.startswith ("hrp2/LARM"):
     jointNames['allButHRP2LeftArm'].append (n)
 robot.client.basic.problem.setPassiveDofs ('left-hand-grasp-passive', jointNames['hrp2'])
-#robot.client.basic.problem.setPassiveDofs ('left-hand-pregrasp-passive', jointNames['allButHRP2LeftArm'])
 
 jointNames ["bottomPart"] = \
-['hrp2/base_joint_x',
- 'hrp2/base_joint_y',
- 'hrp2/base_joint_z',
- 'hrp2/base_joint_SO3',
- 'hrp2/LLEG_JOINT0',
- 'hrp2/LLEG_JOINT1',
- 'hrp2/LLEG_JOINT2',
- 'hrp2/LLEG_JOINT3',
- 'hrp2/LLEG_JOINT4',
- 'hrp2/LLEG_JOINT5',
- 'hrp2/RLEG_JOINT0',
- 'hrp2/RLEG_JOINT1',
- 'hrp2/RLEG_JOINT2',
- 'hrp2/RLEG_JOINT3',
- 'hrp2/RLEG_JOINT4',
- 'hrp2/RLEG_JOINT5']
+  ['hrp2/base_joint_x',
+   'hrp2/base_joint_y',
+   'hrp2/base_joint_z',
+   'hrp2/base_joint_SO3',
+   'hrp2/LLEG_JOINT0',
+   'hrp2/LLEG_JOINT1',
+   'hrp2/LLEG_JOINT2',
+   'hrp2/LLEG_JOINT3',
+   'hrp2/LLEG_JOINT4',
+   'hrp2/LLEG_JOINT5',
+   'hrp2/RLEG_JOINT0',
+   'hrp2/RLEG_JOINT1',
+   'hrp2/RLEG_JOINT2',
+   'hrp2/RLEG_JOINT3',
+   'hrp2/RLEG_JOINT4',
+   'hrp2/RLEG_JOINT5']
 
 lockbottompart = list ()
 for n in jointNames ["bottomPart"]:
   if   n is "hrp2/base_joint_SO3":
     lockbottompart.append ("lock"+n+'_x')
-    p.createLockedDofConstraint (lockbottompart[-1], n, 0, 1 ,0)
+    p.createLockedDofConstraint (lockbottompart[-1], n, 0, 1 ,0) 
     p.isLockedDofParametric (lockbottompart[-1], True)
 
     lockbottompart.append ("lock"+n+'_y')
-    p.createLockedDofConstraint (lockbottompart[-1], n, 0, 2 ,1)
+    p.createLockedDofConstraint (lockbottompart[-1], n, 0, 2 ,1) 
     p.isLockedDofParametric (lockbottompart[-1], True)
 
     lockbottompart.append ("lock"+n+'_z')
-    p.createLockedDofConstraint (lockbottompart[-1], n, 0, 3 ,2)
+    p.createLockedDofConstraint (lockbottompart[-1], n, 0, 3 ,2) 
     p.isLockedDofParametric (lockbottompart[-1], True)
   else:
     lockbottompart.append ("lock"+n)
@@ -104,60 +98,31 @@ for n in jointNames ["bottomPart"]:
     p.isLockedDofParametric (lockbottompart[-1], True)
 
 p.createStaticStabilityConstraints ("balance", q1)
-#p.createComplementStaticStabilityConstraints ("c-balance", q1)
-##cBalance = ["c-balance/c-orientation-left-foot","c-balance/c-position-left-foot"]
-#cBalance = ["c-balance/c-position-left-foot"]
-#p.client.basic.problem.isParametric ("c-balance/c-orientation-left-foot", True)
-#p.client.basic.problem.isParametric ("c-balance/c-position-left-foot", True)
 
 graph = robot.client.manipulation.graph
 id = dict()
 id["graph"   ] = graph.createGraph ('hrp2-screwgun')
 id["subgraph"] = graph.createSubGraph ('lefthand')
 id["screwgun"] = graph.createNode (id["subgraph"], 'screwgun')
-id["prescrewgun"] = graph.createNode (id["subgraph"], 'prescrewgun')
 id["free"    ] = graph.createNode (id["subgraph"], 'free')
-id["unpregrasp"] = graph.createEdge (id["prescrewgun"], id["free"], "unpregrasp", 1, False)
-id[  "pregrasp"] = graph.createEdge (id["free"], id["prescrewgun"],   "pregrasp", 10, True)
-id["ungrasp"] = graph.createEdge (id["screwgun"], id["prescrewgun"], "ungrasp", 1, False)
-id[  "grasp"] = graph.createEdge (id["prescrewgun"], id["screwgun"],   "grasp", 10, True)
 
-id["move_free" ] = graph.createEdge (id["free"    ], id["free"    ], "move_free", 1, False)
+id["ungrasp"] = graph.createEdge (id["screwgun"], id["free"], "ungrasp", 1, False)
+id[  "grasp"] = graph.createEdge (id["free"], id["screwgun"],   "grasp", 10, True)
+
+id["move_free" ] = graph.createEdge (id["free"    ], id["free"    ], "move_free" , 1 , False)
 id["keep_grasp"] = graph.createEdge (id["screwgun"], id["screwgun"], "keep_grasp", 10, False)
-id["keep_align"] = graph.createEdge (id["prescrewgun"], id["prescrewgun"], "keep_align", 1, False)
 
-graph.setNumericalConstraints (id["prescrewgun"], ['left-hand-pregrasp', 'left-hand-pregrasp/ineq_0', 'left-hand-pregrasp/ineq_0.1'])
-#graph.setNumericalConstraints (id["prescrewgun"], ['left-hand-pregrasp', 'left-hand-pregrasp/ineq_0'])
-graph.setNumericalConstraintsForPath (id["prescrewgun"], ['left-hand-pregrasp-passive'])
 graph.setNumericalConstraints (id["screwgun"], ['left-hand-grasp'])
 graph.setNumericalConstraintsForPath (id["screwgun"], ['left-hand-grasp-passive'])
 graph.setLockedDofConstraints (id["move_free"], lockscrewgun)
-graph.setLockedDofConstraints (id["pregrasp"], lockscrewgun)
-graph.setLockedDofConstraints (id["unpregrasp"], lockscrewgun)
-#graph.setNumericalConstraints (id["grasp"], cBalance)
-#graph.setNumericalConstraints (id["ungrasp"], cBalance)
-#graph.setLockedDofConstraints (id["grasp"], lockscrewgun)
-#graph.setLockedDofConstraints (id["ungrasp"], lockscrewgun)
-graph.setLockedDofConstraints (id["grasp"], sum([lockscrewgun, lockbottompart],[]))
-graph.setLockedDofConstraints (id["ungrasp"], sum([lockscrewgun, lockbottompart],[]))
-graph.setLockedDofConstraints (id["keep_align"], lockscrewgun)
+graph.setLockedDofConstraints (id["grasp"], lockscrewgun)
+graph.setLockedDofConstraints (id["ungrasp"], lockscrewgun)
+#graph.setLockedDofConstraints (id["grasp"], sum([lockscrewgun, lockbottompart],[]))
+#graph.setLockedDofConstraints (id["ungrasp"], sum([lockscrewgun, lockbottompart],[]))
 graph.setNumericalConstraints (id["graph"], p.balanceConstraints ())
 graph.setLockedDofConstraints (id["graph"], locklhand)
 
 manip = robot.client.manipulation
-
-#res = manip.problem.applyConstraints ([id["free"]], robot.shootRandomConfig())
-#if not res[0]:
-  #raise StandardError ("Could not project qinit")
-#qinit = res[1]
-
-#res = manip.problem.applyConstraints ([id["free"]], robot.shootRandomConfig())
-#if not res[0]:
-  #raise StandardError ("Could not project qgoal")
-#qgoal = res[1]
-
-#p.setInitialConfig (qinit)
-#p.addGoalConfig (qgoal)
 
 p.setInitialConfig (q1)
 p.addGoalConfig (q2)
