@@ -100,4 +100,4 @@ manip = robot.client.manipulation
 p.setInitialConfig (qgoal)
 p.addGoalConfig (qinit)
 
-manip.graph.statOnConstraint ([id["grasp"]])
+manip.graph.statOnConstraint (id["grasp"])
