@@ -6,7 +6,7 @@ Robot.packageName = "fiad_description"
 Robot.urdfName = "ur5"
 Robot.urdfSuffix = ''
 Robot.srdfSuffix = '_ee'
-withPregrasp = True 
+withWaypoint = True
 
 robot = Robot ('ur5')
 robot.client.basic.problem.selectPathPlanner ("M-RRT")
@@ -16,7 +16,6 @@ for a in ["x","y","z"]:
   robot.setJointBounds ("box/base_joint_"+a, [-1,1])
 robot.client.basic.problem.resetRoadmap ()
 robot.client.basic.problem.selectPathOptimizer ('None')
-#robot.client.basic.problem.setErrorThreshold (1e-3)
 robot.client.basic.problem.setMaxIterations (40)
 
 r = MultiRobotPub (robot)
@@ -28,7 +27,7 @@ qgoal=[0,0,0,0,0,0,0,-0.5,0,1,0,0,0]
 p = ProblemSolver (robot)
 p.createGrasp ('grasp', 'ur5/ee', 'box/handle')
 p.createGrasp ('grasp-passive', 'ur5/ee', 'box/handle')
-if withPregrasp:
+if withWaypoint:
   p.createPreGrasp ('pregrasp', 'ur5/ee', 'box/handle')
 p.createLockedDofConstraint ('box_lock_x' , 'box/base_joint_x'  , 0, 0, 0)
 p.createLockedDofConstraint ('box_lock_y' , 'box/base_joint_y'  , 0, 0, 0)
@@ -56,48 +55,30 @@ graph = robot.client.manipulation.graph
 id = dict()
 id["graph"   ] = graph.createGraph ('ur5-box')
 id["subgraph"] = graph.createSubGraph ('ee')
-if withPregrasp:
-  id["box"   ] = graph.createNode (id["subgraph"], 'box'   )
-  id["prebox"] = graph.createNode (id["subgraph"], 'prebox')
-  id["free"  ] = graph.createNode (id["subgraph"], 'free'  )
-else:
-  id["box" ] = graph.createNode (id["subgraph"], 'box' )
-  id["free"] = graph.createNode (id["subgraph"], 'free')
+id["box" ] = graph.createNode (id["subgraph"], 'box' )
+id["free"] = graph.createNode (id["subgraph"], 'free')
 
-if withPregrasp:
-  id["unpregrasp"] = graph.createEdge (id["prebox"], id["free"], "unpregrasp", 1, False)
-  id[  "pregrasp"] = graph.createEdge (id["free"], id["prebox"],   "pregrasp", 10, True)
-  id[   "ungrasp"] = graph.createEdge (id["box"],  id["prebox"],    "ungrasp", 1, False)
-  id[     "grasp"] = graph.createEdge (id["prebox"],  id["box"],      "grasp", 10, True)
+id["ungrasp"] = graph.createEdge (id["box"],  id["free"],"ungrasp", 1, False)
+id[  "grasp"] = graph.createEdge (id["free"],  id["box"],  "grasp", 10, True)
 
-  id["move_free" ] = graph.createEdge (id["free"], id["free"], "move_free" , 1, False)
-  id["keep_grasp"] = graph.createEdge (id["box" ], id["box" ], "keep_grasp", 1, False)
-  id["keep_align"] = graph.createEdge (id["prebox" ], id["prebox" ], "keep_align", 0, False)
-else:
-  id["ungrasp"] = graph.createEdge (id["box"], id["free"], "ungrasp", 1, False)
-  id[  "grasp"] = graph.createEdge (id["free"], id["box"],   "grasp", 1, True)
+id["move_free" ] = graph.createEdge (id["free"], id["free"], "move_free" , 1, False)
+id["keep_grasp"] = graph.createEdge (id["box" ], id["box" ], "keep_grasp", 1, False)
 
-  id["move_free" ] = graph.createEdge (id["free"], id["free"], "move_free" , 1, False)
-  id["keep_grasp"] = graph.createEdge (id["box" ], id["box" ], "keep_grasp", 1, False)
+if withWaypoint:
+  id["grasp_w"], id["grasp_w_node"] = graph.addWaypoint (id["grasp"], "grasp_w")
 
 graph.setNumericalConstraints (id["box"], ['grasp'])
 graph.setNumericalConstraintsForPath (id["box"], ['grasp-passive'])
 graph.setLockedDofConstraints (id["move_free"], lockbox)
 graph.setLockedDofConstraints (id["grasp"], lockbox)
 graph.setLockedDofConstraints (id["ungrasp"], lockbox)
-if withPregrasp:
-  graph.setNumericalConstraints (id["prebox"], ['pregrasp', 'pregrasp/ineq_0', 'pregrasp/ineq_0.1'])
-  #graph.setNumericalConstraints (id["prebox"], ['pregrasp'])
-  graph.setNumericalConstraintsForPath (id["prebox"], ['pregrasp'])
-  graph.setLockedDofConstraints (id["keep_align"], lockbox)
-  graph.setLockedDofConstraints (id["pregrasp"], lockbox)
-  graph.setLockedDofConstraints (id["unpregrasp"], lockbox)
+if withWaypoint:
+  graph.setNumericalConstraints (id["grasp_w_node"], ['pregrasp', 'pregrasp/ineq_0', 'pregrasp/ineq_0.1'])
+  graph.setLockedDofConstraints (id["grasp_w"], lockbox)
 
 manip = robot.client.manipulation
 
-#p.setInitialConfig (qinit)
-#p.addGoalConfig (qgoal)
-p.setInitialConfig (qgoal)
-p.addGoalConfig (qinit)
+p.setInitialConfig (qinit)
+p.addGoalConfig (qgoal)
 
 manip.graph.statOnConstraint (id["grasp"])

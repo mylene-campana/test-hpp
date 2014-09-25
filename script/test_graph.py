@@ -2,7 +2,6 @@ from hpp.corbaserver.manipulation.hrp2 import Robot
 from hpp.corbaserver.manipulation import ProblemSolver
 from scene_publisher3b import ScenePublisher as MultiRobotPub
 
-#Robot.urdfSuffix = '_capsule_mesh_hands_fixed'
 Robot.urdfSuffix = '_capsule_mesh'
 Robot.srdfSuffix = '_mathieu'
 

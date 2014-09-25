@@ -30,6 +30,7 @@ qinit=[6.351445422051578e-15, -7.64857075802911e-16, -0.00010650933265040068, 0.
 p = ProblemSolver (robot)
 p.createGrasp ('left-hand-grasp', 'hrp2/leftHand', 'screw_gun/handle2')
 p.createGrasp ('left-hand-grasp-passive', 'hrp2/leftHand', 'screw_gun/handle2')
+p.createPreGrasp ('pregrasp', 'hrp2/leftHand', 'screw_gun/handle2')
 rankcfg = 1; rankvel = 0; lockscrewgun = list ();
 for axis in ['x','y','z']:
   p.createLockedDofConstraint ('screwgun_lock_'  + axis, 'screw_gun/base_joint_' + axis, 0, 0, 0)
@@ -109,6 +110,8 @@ id["free"    ] = graph.createNode (id["subgraph"], 'free')
 id["ungrasp"] = graph.createEdge (id["screwgun"], id["free"], "ungrasp", 1, False)
 id[  "grasp"] = graph.createEdge (id["free"], id["screwgun"],   "grasp", 10, True)
 
+id["grasp_w"], id["grasp_w_node"] = graph.addWaypoint (id["grasp"], "grasp_w")
+
 id["move_free" ] = graph.createEdge (id["free"    ], id["free"    ], "move_free" , 1 , False)
 id["keep_grasp"] = graph.createEdge (id["screwgun"], id["screwgun"], "keep_grasp", 10, False)
 
@@ -117,8 +120,8 @@ graph.setNumericalConstraintsForPath (id["screwgun"], ['left-hand-grasp-passive'
 graph.setLockedDofConstraints (id["move_free"], lockscrewgun)
 graph.setLockedDofConstraints (id["grasp"], lockscrewgun)
 graph.setLockedDofConstraints (id["ungrasp"], lockscrewgun)
-#graph.setLockedDofConstraints (id["grasp"], sum([lockscrewgun, lockbottompart],[]))
-#graph.setLockedDofConstraints (id["ungrasp"], sum([lockscrewgun, lockbottompart],[]))
+graph.setNumericalConstraints (id["grasp_w_node"], ['pregrasp', 'pregrasp/ineq_0', 'pregrasp/ineq_0.1'])
+graph.setLockedDofConstraints (id["grasp_w"], lockscrewgun)
 graph.setNumericalConstraints (id["graph"], p.balanceConstraints ())
 graph.setLockedDofConstraints (id["graph"], locklhand)
 
@@ -128,4 +131,4 @@ p.setInitialConfig (q1)
 p.addGoalConfig (q2)
 
 # This projector tends to fail with probability 0.6 (with random configuration)
-manip.graph.statOnConstraint ([id["grasp"]])
+manip.graph.statOnConstraint (id["grasp"])
