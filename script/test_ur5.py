@@ -7,6 +7,7 @@ Robot.urdfName = "ur5"
 Robot.urdfSuffix = ''
 Robot.srdfSuffix = '_ee'
 withWaypoint = True
+withLevelSetEgde = True
 
 robot = Robot ('ur5')
 robot.client.basic.problem.selectPathPlanner ("M-RRT")
@@ -59,13 +60,17 @@ id["box" ] = graph.createNode (id["subgraph"], 'box' )
 id["free"] = graph.createNode (id["subgraph"], 'free')
 
 id["ungrasp"] = graph.createEdge (id["box"],  id["free"],"ungrasp", 1, False)
-id[  "grasp"] = graph.createEdge (id["free"],  id["box"],  "grasp", 10, True)
 
 id["move_free" ] = graph.createEdge (id["free"], id["free"], "move_free" , 1, False)
 id["keep_grasp"] = graph.createEdge (id["box" ], id["box" ], "keep_grasp", 1, False)
+if withLevelSetEgde:
+  id["keep_grasp_ls"] = graph.createLevelSetEdge (id["box" ], id["box" ], "keep_grasp_ls", 1, False)
 
 if withWaypoint:
-  id["grasp_w"], id["grasp_w_node"] = graph.addWaypoint (id["grasp"], "grasp_w")
+  id[  "grasp"] = graph.createWaypointEdge (id["free"],  id["box"],  "grasp", 10, True)
+  id["grasp_w"], id["grasp_w_node"] = graph.getWaypoint (id["grasp"])
+else:
+  id[  "grasp"] = graph.createEdge (id["free"],  id["box"],  "grasp", 10, True)
 
 graph.setNumericalConstraints (id["box"], ['grasp'])
 graph.setNumericalConstraintsForPath (id["box"], ['grasp-passive'])
@@ -75,10 +80,13 @@ graph.setLockedDofConstraints (id["ungrasp"], lockbox)
 if withWaypoint:
   graph.setNumericalConstraints (id["grasp_w_node"], ['pregrasp', 'pregrasp/ineq_0', 'pregrasp/ineq_0.1'])
   graph.setLockedDofConstraints (id["grasp_w"], lockbox)
+if withLevelSetEgde:
+  graph.setLevelSetConstraints (id["keep_grasp_ls"], [], lockbox)
 
 manip = robot.client.manipulation
 
 p.setInitialConfig (qinit)
 p.addGoalConfig (qgoal)
 
-manip.graph.statOnConstraint (id["grasp"])
+if not withLevelSetEgde:
+  manip.graph.statOnConstraint (id["grasp"])
