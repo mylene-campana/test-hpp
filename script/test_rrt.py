@@ -9,7 +9,7 @@ Robot.urdfSuffix = '_capsule'
 Robot.srdfSuffix= '_capsule'
 
 robot = Robot ('hrp2_14')
-robot.setTranslationBounds (-3, 3, -3, 3, 0, 1)
+robot.setJointBounds ("base_joint_xyz", [-3, 3, -3, 3, 0, 1])
 cl = robot.client
 
 r = ScenePublisher (robot)
