@@ -1,6 +1,6 @@
 from hpp.corbaserver.manipulation.hrp2 import Robot
 from hpp.corbaserver.manipulation import ProblemSolver
-from scene_publisher3b import ScenePublisher as MultiRobotPub
+from hpp_ros.manipulation import ScenePublisher
 
 Robot.urdfSuffix = '_capsule_mesh'
 Robot.srdfSuffix = '_mathieu'
@@ -10,14 +10,13 @@ robot.client.basic.problem.selectPathPlanner ("M-RRT")
 robot.loadObjectModel ('screw_gun', 'freeflyer', 'airbus_environment', 'screw_gun', '_nomass', '')
 robot.buildCompositeRobot ('hrp2-screw', ['hrp2', 'screw_gun'])
 for d in ["hrp2", "screw_gun"]:
-  for a in ["x","y","z"]:
-    robot.setJointBounds (d+"/base_joint_"+a, [-4,4])
+  robot.setJointBounds (d+"/base_joint_xyz", [-4,4,-4,4,-4,4])
 robot.client.basic.problem.resetRoadmap ()
 robot.client.basic.problem.selectPathOptimizer ('None')
 robot.client.basic.problem.setErrorThreshold (1e-3)
 robot.client.basic.problem.setMaxIterations (40)
 
-r = MultiRobotPub (robot)
+r = ScenePublisher (robot)
 
 half_sitting = robot.getCurrentConfig ();
 q1=[0.2561522768052704, 0.009968182216397095, -0.0013343337623661373, 0.9822200021750263, -0.01324065709811156, 0.06488994582367685, 0.1756640181081545, 0.3518980306918394, 0.5587732909530961, -0.00014707196704839167, 0.003348199890377334, 0.2851538622381365, 0.019515985023849783, 0.47568241804625144, 0.034325840512149174, 0.48238375657832383, 0.5252200250587239, 0.75, -0.75, 0.75, -0.75, 0.75, -0.75, -0.08183778724042397, -0.002329068502171773, 0.0013672024871911833, -0.03184796508559784, 0.00013468971902929027, -0.006463660186047965, 0.75, -0.75, 0.75, -0.75, 0.75, -0.75, -0.0014454298679420635, 0.008692815372600783, -0.17944952816665183, -0.0349066, 0.08186718484328222, -0.0052176502711966674, -0.0014458867527617663, 0.008689383322591662, -0.1789250482962942, -0.0349066, 0.0813567181568653, -0.00521418794593098, -1.0, -0.009968182216397, 0.3399077826256168, 0.8920410834920809, 0.03081996727219969, -0.37686669705702674, -0.2475567159843218]
@@ -31,10 +30,10 @@ p = ProblemSolver (robot)
 p.createGrasp ('left-hand-grasp', 'hrp2/leftHand', 'screw_gun/handle2')
 p.createGrasp ('left-hand-grasp-passive', 'hrp2/leftHand', 'screw_gun/handle2')
 p.createPreGrasp ('pregrasp', 'hrp2/leftHand', 'screw_gun/handle2')
-rankcfg = 1; rankvel = 0; lockscrewgun = list ();
+rankcfg = 0; rankvel = 0; lockscrewgun = list ();
 for axis in ['x','y','z']:
-  p.createLockedDofConstraint ('screwgun_lock_'  + axis, 'screw_gun/base_joint_' + axis, 0, 0, 0)
-  p.createLockedDofConstraint ('screwgun_lock_r' + axis, 'screw_gun/base_joint_SO3', 0, rankcfg, rankvel)
+  p.createLockedDofConstraint ('screwgun_lock_'  + axis, 'screw_gun/base_joint_xyz', 0, rankcfg, rankvel)
+  p.createLockedDofConstraint ('screwgun_lock_r' + axis, 'screw_gun/base_joint_SO3', 0, rankcfg + 1, rankvel)
   p.isLockedDofParametric ('screwgun_lock_'  + axis ,True)
   p.isLockedDofParametric ('screwgun_lock_r' + axis ,True)
   lockscrewgun.append ('screwgun_lock_'  + axis)
@@ -78,25 +77,6 @@ jointNames ["bottomPart"] = \
    'hrp2/RLEG_JOINT3',
    'hrp2/RLEG_JOINT4',
    'hrp2/RLEG_JOINT5']
-
-lockbottompart = list ()
-for n in jointNames ["bottomPart"]:
-  if   n is "hrp2/base_joint_SO3":
-    lockbottompart.append ("lock"+n+'_x')
-    p.createLockedDofConstraint (lockbottompart[-1], n, 0, 1 ,0) 
-    p.isLockedDofParametric (lockbottompart[-1], True)
-
-    lockbottompart.append ("lock"+n+'_y')
-    p.createLockedDofConstraint (lockbottompart[-1], n, 0, 2 ,1) 
-    p.isLockedDofParametric (lockbottompart[-1], True)
-
-    lockbottompart.append ("lock"+n+'_z')
-    p.createLockedDofConstraint (lockbottompart[-1], n, 0, 3 ,2) 
-    p.isLockedDofParametric (lockbottompart[-1], True)
-  else:
-    lockbottompart.append ("lock"+n)
-    p.createLockedDofConstraint (lockbottompart[-1], n, 0, 0, 0)
-    p.isLockedDofParametric (lockbottompart[-1], True)
 
 p.createStaticStabilityConstraints ("balance", q1)
 
