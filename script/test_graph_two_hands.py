@@ -5,8 +5,7 @@ robot = Robot ('pr2', rootJointType = "anchor")
 robot.client.manipulation.robot.setRootJointPosition ('pr2', (-3.2, -4, 0, 1, 0, 0, 0))
 robot.loadObjectModel ('box', 'freeflyer', 'hpp_tutorial', 'box', '', '')
 robot.buildCompositeRobot ('pr2-box', ['pr2', 'box'])
-robot.client.basic.obstacle.loadObstacleModel ("iai_maps", "kitchen_area", "")
-
+robot.client.manipulation.robot.loadEnvironmentModel ("iai_maps", "kitchen_area", '', '', "")
 robot.setJointBounds ("box/base_joint_xyz", [-3,-2,-5,-3,0.7,1])
 
 from hpp_ros.manipulation import ScenePublisher
@@ -49,17 +48,8 @@ robot.client.basic.problem.setMaxIterations (40)
 from hpp.corbaserver.manipulation import ProblemSolver
 p = ProblemSolver (robot)
 
-h = 0.05 / 2;
-bds = [-3.1,-1.9,-5.1,-2.9]
-l = 0.76 - h
-pts = [[-h,-h,-h], [-h, h,-h], [-h,-h, h], [-h, h, h],
-       [ h,-h,-h], [ h, h,-h], [ h,-h, h], [ h, h, h],
-       [bds[0],bds[2], l],[bds[0],bds[3], l],[bds[1],bds[2], l],[bds[1],bds[3], l]]
-
-oTri = [[0, 2, 1], [4, 5, 6]]
-tTri = [[8, 9, 10], [9, 11, 10]]
-
-robot.client.basic.problem.createStaticStabilityGravityConstraint ('box_placement', 'box/base_joint_SO3', pts, oTri, tTri)
+robot.client.manipulation.problem.createPlacementConstraint (
+  'box_placement', 'box', 'box/base_joint_SO3', 'box_surface', 'pancake_table_table_top')
 
 p.createGrasp ('l_grasp', 'pr2/l_gripper', 'box/handle')
 p.createGrasp ('l_grasp_passive', 'pr2/l_gripper', 'box/handle')
