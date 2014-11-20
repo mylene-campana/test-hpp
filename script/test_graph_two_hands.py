@@ -173,13 +173,13 @@ cg.client.graph.setLevelSetConstraints (cg.edges['r_keep_grasp_ls'], [], lockbox
 cg.setConstraints (graph = True, lockDof = lockhands)
 # 3}}}
 
-res = p.client.manipulation.problem.applyConstraints (cg.nodes['free'], q_init); r
+res = p.client.manipulation.problem.applyConstraints (cg.nodes['free'], q_init)
 if not res[0]:
   raise Exception ('Init configuration could not be projected.')
-q_init = res [1]
-res = p.client.manipulation.problem.applyConstraints (cg.nodes['free'], q_goal); r (res[1]); res[0]
+q_init_proj = res [1]
+res = p.client.manipulation.problem.applyConstraints (cg.nodes['free'], q_goal)
 if not res[0]:
   raise Exception ('Goal configuration could not be projected.')
-q_goal = res [1]
-p.setInitialConfig (q_init)
-p.addGoalConfig (q_goal)
+q_goal_proj = res [1]
+p.setInitialConfig (q_init_proj)
+p.addGoalConfig (q_goal_proj)
