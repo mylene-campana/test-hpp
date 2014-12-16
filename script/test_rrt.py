@@ -31,11 +31,11 @@ ps.setNumericalConstraints ("balance", ["balance/relative-com",
 # lock hands in closed position
 lockedDofs = robot.leftHandClosed ()
 for name, value in lockedDofs.iteritems ():
-    ps.lockDof (name, value, 0, 0)
+    ps.lockJoint (name, value)
 
 lockedDofs = robot.rightHandClosed ()
 for name, value in lockedDofs.iteritems ():
-    ps.lockDof (name, value, 0, 0)
+    ps.lockJoint (name, value)
 
 
 q1 = [0.0, 0.0, 0.705, 1.0, 0., 0., 0.0, 0.0, 0.0, 0.0, 0.0, -0.4, 0, -1.2, -1.0, 0.0, 0.0, 0.174532, -0.174532, 0.174532, -0.174532, 0.174532, -0.174532, 0.261799, -0.17453, 0.0, -0.523599, 0.0, 0.0, 0.174532, -0.174532, 0.174532, -0.174532, 0.174532, -0.174532, 0.0, 0.0, -0.453786, 0.872665, -0.418879, 0.0, 0.0, 0.0, -0.453786, 0.872665, -0.418879, 0.0]
