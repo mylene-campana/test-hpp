@@ -23,7 +23,7 @@
 
 #include <Eigen/Core>
 
-#include <fcl/shape/geometric_shapes.h>
+#include <hpp/fcl/shape/geometric_shapes.h>
 
 #include <hpp/util/debug.hh>
 #include <hpp/model/body.hh>
