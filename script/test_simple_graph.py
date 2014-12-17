@@ -4,7 +4,7 @@ from hpp.corbaserver.manipulation import ProblemSolver, ConstraintGraph
 from hpp_ros.manipulation import ScenePublisher
 
 Robot.urdfSuffix = '_capsule_mesh'
-Robot.srdfSuffix = '_mathieu'
+Robot.srdfSuffix = '_manipulation'
 
 # Load HRP2 and a screwgun {{{3
 robot = Robot ('hrp2')
@@ -49,15 +49,15 @@ for n in jointNames['all']:
 graph.createGrasp ('l_grasp', 'hrp2/leftHand', 'screw_gun/handle2', jointNames ['hrp2'])
 graph.createPreGrasp ('l_pregrasp', 'hrp2/leftHand', 'screw_gun/handle2')
 
-lockscrewgun = p.lockFreeFlyerJoint ('screw_gun/base_joint', 'screwgun_lock', parametric = True)
+lockscrewgun = p.lockFreeFlyerJoint ('screw_gun/base_joint', 'screwgun_lock')
 
 locklhand = ['larm_6','lhand_0','lhand_1','lhand_2','lhand_3','lhand_4']
-p.createLockedDofConstraint ('larm_6' , 'hrp2/LARM_JOINT6' , q1[17], 0, 0)
-p.createLockedDofConstraint ('lhand_0', 'hrp2/LHAND_JOINT0', q1[18], 0, 0)
-p.createLockedDofConstraint ('lhand_1', 'hrp2/LHAND_JOINT1', q1[19], 0, 0)
-p.createLockedDofConstraint ('lhand_2', 'hrp2/LHAND_JOINT2', q1[20], 0, 0)
-p.createLockedDofConstraint ('lhand_3', 'hrp2/LHAND_JOINT3', q1[21], 0, 0)
-p.createLockedDofConstraint ('lhand_4', 'hrp2/LHAND_JOINT4', q1[22], 0, 0)
+p.createLockedJointConstraint ('larm_6' , 'hrp2/LARM_JOINT6' , q1[17:18])
+p.createLockedJointConstraint ('lhand_0', 'hrp2/LHAND_JOINT0', q1[18:19])
+p.createLockedJointConstraint ('lhand_1', 'hrp2/LHAND_JOINT1', q1[19:20])
+p.createLockedJointConstraint ('lhand_2', 'hrp2/LHAND_JOINT2', q1[20:21])
+p.createLockedJointConstraint ('lhand_3', 'hrp2/LHAND_JOINT3', q1[21:22])
+p.createLockedJointConstraint ('lhand_4', 'hrp2/LHAND_JOINT4', q1[22:23])
 
 p.createStaticStabilityConstraints ("balance", q1)
 # 3}}}
