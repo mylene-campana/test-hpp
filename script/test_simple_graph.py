@@ -4,7 +4,7 @@ from hpp.corbaserver.manipulation import ProblemSolver, ConstraintGraph
 from hpp_ros.manipulation import ScenePublisher
 
 Robot.urdfSuffix = '_capsule_mesh'
-Robot.srdfSuffix = '_mathieu'
+Robot.srdfSuffix = '_manipulation'
 
 # Load HRP2 and a screwgun {{{3
 robot = Robot ('hrp2')
