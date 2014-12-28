@@ -11,22 +11,22 @@ class ScrewGun (object):
   urdfSuffix = "_massless"
   srdfSuffix = ""
 
-Robot.urdfSuffix = ''
+Robot.urdfSuffix = '_capsule_mesh'
 Robot.srdfSuffix = '_manipulation'
 
 # Load HRP2 and a screwgun {{{3
 robot = Robot ('hrp2-screw', 'hrp2')
-robot.client.basic.problem.selectPathPlanner ("M-RRT")
-r = Viewer (robot)
+ps = ProblemSolver (robot)
+ps.selectPathPlanner ("M-RRT")
+r = Viewer (ps)
 r.loadObjectModel (ScrewGun, 'screw_gun')
 r.buildCompositeRobot (['hrp2', 'screw_gun'])
 for d in ["hrp2", "screw_gun"]:
   robot.setJointBounds (d+"/base_joint_xyz", [-4,4,-4,4,-4,4])
 
-robot.client.basic.problem.resetRoadmap ()
-robot.client.basic.problem.selectPathOptimizer ('None')
-robot.client.basic.problem.setErrorThreshold (1e-3)
-robot.client.basic.problem.setMaxIterations (40)
+ps.selectPathOptimizer ('None')
+ps.setErrorThreshold (1e-3)
+ps.setMaxIterations (40)
 # 3}}}
 
 # Define configurations {{{3
@@ -44,7 +44,6 @@ q_goal [-7:] = [2, -1, 0.65, 0.7071067811865476, 0, -0.7071067811865475, 0]
 # 3}}}
 
 # Generate constraints {{{3
-p = ProblemSolver (robot)
 graph = ConstraintGraph (robot, 'graph')
 
 
@@ -61,17 +60,17 @@ for n in jointNames['all']:
 graph.createGrasp ('l_grasp', 'hrp2/leftHand', 'screw_gun/handle2', jointNames ['hrp2'])
 graph.createPreGrasp ('l_pregrasp', 'hrp2/leftHand', 'screw_gun/handle2')
 
-lockscrewgun = p.lockFreeFlyerJoint ('screw_gun/base_joint', 'screwgun_lock', parametric = True)
+lockscrewgun = ps.lockFreeFlyerJoint ('screw_gun/base_joint', 'screwgun_lock', parametric = True)
 
 locklhand = ['larm_6','lhand_0','lhand_1','lhand_2','lhand_3','lhand_4']
-p.createLockedDofConstraint ('larm_6' , 'hrp2/LARM_JOINT6' , q_init [ilh], 0, 0)
-p.createLockedDofConstraint ('lhand_0', 'hrp2/LHAND_JOINT0', q_init [ilh+1], 0, 0)
-p.createLockedDofConstraint ('lhand_1', 'hrp2/LHAND_JOINT1', q_init [ilh+2], 0, 0)
-p.createLockedDofConstraint ('lhand_2', 'hrp2/LHAND_JOINT2', q_init [ilh+3], 0, 0)
-p.createLockedDofConstraint ('lhand_3', 'hrp2/LHAND_JOINT3', q_init [ilh+4], 0, 0)
-p.createLockedDofConstraint ('lhand_4', 'hrp2/LHAND_JOINT4', q_init [ilh+5], 0, 0)
+ps.createLockedDofConstraint ('larm_6' , 'hrp2/LARM_JOINT6' , q_init [ilh], 0, 0)
+ps.createLockedDofConstraint ('lhand_0', 'hrp2/LHAND_JOINT0', q_init [ilh+1], 0, 0)
+ps.createLockedDofConstraint ('lhand_1', 'hrp2/LHAND_JOINT1', q_init [ilh+2], 0, 0)
+ps.createLockedDofConstraint ('lhand_2', 'hrp2/LHAND_JOINT2', q_init [ilh+3], 0, 0)
+ps.createLockedDofConstraint ('lhand_3', 'hrp2/LHAND_JOINT3', q_init [ilh+4], 0, 0)
+ps.createLockedDofConstraint ('lhand_4', 'hrp2/LHAND_JOINT4', q_init [ilh+5], 0, 0)
 
-p.createStaticStabilityConstraints ("balance", q_init)
+ps.createStaticStabilityConstraints ("balance", q_init)
 # 3}}}
 
 # Create the graph of constraints {{{3
@@ -95,11 +94,11 @@ graph.setConstraints (edge='grasp_e0', lockDof = lockscrewgun)
 graph.setConstraints (node='grasp_n0', pregrasp = 'l_pregrasp')
 graph.setConstraints (edge='grasp_e1', lockDof = lockscrewgun)
 graph.client.graph.setLevelSetConstraints (graph.edges['keep_grasp_ls'], [], lockscrewgun)
-graph.setConstraints (graph=True, lockDof = locklhand, numConstraints=p.balanceConstraints ())
+graph.setConstraints (graph=True, lockDof = locklhand, numConstraints=ps.balanceConstraints ())
 # 3}}}
 
-p.setInitialConfig (q_init)
-p.addGoalConfig (q_goal)
+ps.setInitialConfig (q_init)
+ps.addGoalConfig (q_goal)
 
 from hpp.gepetto import PathPlayer
 pp = PathPlayer (robot.client.basic, r)
