@@ -22,8 +22,7 @@ balanceConstraints = [constraintName + "/relative-com",
                       constraintName + "/orientation-left-foot",
                       constraintName + "/position-left-foot"]
 
-for a in ["x","y","z"]:
-  robot.setJointBounds ("base_joint_"+a, [-4,4])
+robot.setJointBounds ("base_joint_xyz", [-4,4,-4,4,-4,4])
 
 def testConstraint (constraints, nbIter = 100):
   success = 0
