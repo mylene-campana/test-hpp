@@ -60,19 +60,20 @@ for n in jointNames['all']:
 graph.createGrasp ('l_grasp', 'hrp2/leftHand', 'screw_gun/handle2', jointNames ['hrp2'])
 graph.createPreGrasp ('l_pregrasp', 'hrp2/leftHand', 'screw_gun/handle2')
 
-lockscrewgun = ps.lockFreeFlyerJoint ('screw_gun/base_joint', 'screwgun_lock')
+lockscrewgun = ps.lockFreeFlyerJoint ('screw_gun/base_joint', 'screwgun_lock',
+    compType = 'Equality')
 
 locklhand = ['larm_6','lhand_0','lhand_1','lhand_2','lhand_3','lhand_4']
-ps.createLockedJointConstraint ('larm_6' , 'hrp2/LARM_JOINT6' , [q_init[ilh],])
-ps.createLockedJointConstraint \
+ps.createLockedJoint ('larm_6' , 'hrp2/LARM_JOINT6' , [q_init[ilh],])
+ps.createLockedJoint \
     ('lhand_0', 'hrp2/LHAND_JOINT0', [q_init[ilh + 1],])
-ps.createLockedJointConstraint \
+ps.createLockedJoint \
     ('lhand_1', 'hrp2/LHAND_JOINT1', [q_init[ilh + 2],])
-ps.createLockedJointConstraint \
+ps.createLockedJoint \
     ('lhand_2', 'hrp2/LHAND_JOINT2', [q_init[ilh + 3],])
-ps.createLockedJointConstraint \
+ps.createLockedJoint \
     ('lhand_3', 'hrp2/LHAND_JOINT3', [q_init[ilh + 4],])
-ps.createLockedJointConstraint \
+ps.createLockedJoint \
     ('lhand_4', 'hrp2/LHAND_JOINT4', [q_init[ilh + 5],])
 
 ps.createStaticStabilityConstraints ("balance", q_init)
