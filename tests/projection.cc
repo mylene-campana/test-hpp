@@ -41,7 +41,7 @@
 #include <hpp/model/configuration.hh>
 #include <hpp/constraints/relative-transformation.hh>
 #include <hpp/wholebody-step/static-stability-constraint.hh>
-#include <hpp/core/differentiable-function.hh>
+#include <hpp/constraints/differentiable-function.hh>
 #include <hpp/core/basic-configuration-shooter.hh>
 #include <hpp/core/config-projector.hh>
 
@@ -52,6 +52,7 @@ using hpp::model::Device;
 using hpp::model::DevicePtr_t;
 using hpp::model::JointPtr_t;
 using hpp::core::DifferentiableFunctionPtr_t;
+using hpp::core::NumericalConstraint;
 using hpp::core::Constraint;
 using hpp::core::ConfigProjector;
 using hpp::core::ConfigProjectorPtr_t;
@@ -200,7 +201,7 @@ namespace projection {
     for (size_t i = 0; i < functionSets.size(); i++) {
       cp.push_back (ConfigProjector::create (robot, "", ERROR_THRESHOLD, MAX_ITERATIONS));
       for (size_t j = 0; j < functionSets[i].size(); j++)
-        cp.back()->addConstraint (functionSets[i][j]);
+        cp.back()->add (NumericalConstraint::create (functionSets[i][j]));
     }
     MESSAGE_INF ("There are " << cp.size() << " projectors to be tested.");
 
@@ -605,7 +606,7 @@ namespace shuffle {
     for (size_t i = 0; i < 10; i++) {
       cp.push_back (ConfigProjector::create (robot, "", ERROR_THRESHOLD, MAX_ITERATIONS));
       for (size_t j = 0; j < dfs.size(); j++)
-        cp.back()->addConstraint (dfs[j]);
+        cp.back()->add (NumericalConstraint::create (dfs[j]));
       std::random_shuffle (dfs.begin (), dfs.end ());
     }
     MESSAGE_INF ("There are " << cp.size() << " ConfigProjector to be tested.");
