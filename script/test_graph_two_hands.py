@@ -111,20 +111,12 @@ lockhands = ['l_l_finger','l_r_finger','r_l_finger','r_r_finger'];
 cg.createNode (['both', 'right', 'left', 'free'])
 
 cg.setConstraints (node='free', numConstraints=['box_placement'])
-# This is not need as the object is locked in node free.
-#graph.setNumericalConstraintsForPath (id["free"], ['box_placement'])
 
 # Right hand {{{4
 cg.setConstraints (node='right', grasp='r_grasp')
 
-cg.createWaypointEdge ('right', 'free', 'r_ungrasp', nb=1, weight=1)
-
 cg.createWaypointEdge ('free', 'right', 'r_grasp', nb=1, weight=10)
 
-#graph.setLockedDofConstraints (id["r_ungrasp_w"], lockbox)
-cg.setConstraints (edge='r_ungrasp_e1', lockDof = lockbox)
-cg.setConstraints (node='r_ungrasp_n0', pregrasp = 'r_pregrasp', numConstraints = ['box_placement'])
-cg.setConstraints (edge='r_ungrasp_e0', lockDof = lockbox)
 cg.setConstraints (edge='r_grasp_e1', lockDof = lockbox)
 cg.setConstraints (node='r_grasp_n0', pregrasp = 'r_pregrasp')
 cg.setConstraints (edge='r_grasp_e0', lockDof = lockbox)
@@ -133,13 +125,8 @@ cg.setConstraints (edge='r_grasp_e0', lockDof = lockbox)
 # Left hand {{{4
 cg.setConstraints (node = 'left', grasp = 'l_grasp')
 
-cg.createWaypointEdge ('left', 'free', 'l_ungrasp', 1, 1)
-
 cg.createWaypointEdge ('free', 'left', 'l_grasp', 1, 10)
 
-cg.setConstraints (edge='l_ungrasp_e1', lockDof = lockbox)
-cg.setConstraints (node='l_ungrasp_n0', pregrasp = 'l_pregrasp', numConstraints = ['box_placement'])
-cg.setConstraints (edge='l_ungrasp_e0', lockDof = lockbox)
 cg.setConstraints (edge='l_grasp_e1', lockDof = lockbox)
 cg.setConstraints (node='l_grasp_n0', pregrasp = 'l_pregrasp')
 cg.setConstraints (edge='l_grasp_e0', lockDof = lockbox)
@@ -152,37 +139,29 @@ cg.createWaypointEdge ('both', 'right', 'b_l_ungrasp', 1, 1)
 
 cg.createWaypointEdge ('right', 'both', 'b_l_grasp', 1, 10)
 
-cg.setConstraints (edge='b_l_ungrasp_e1', lockDof = lockbox)
 cg.setConstraints (node='b_l_ungrasp_n0', grasp = 'r_grasp', pregrasp = 'l_pregrasp')
 cg.setConstraints (edge='b_l_ungrasp_e0', lockDof = lockbox)
 cg.setConstraints (edge='b_l_grasp_e1', lockDof = lockbox)
 cg.setConstraints (node='b_l_grasp_n0', grasp = 'r_grasp', pregrasp = 'l_pregrasp')
-cg.setConstraints (edge='b_l_grasp_e0', lockDof = lockbox)
 
 cg.createWaypointEdge ('both', 'left', 'b_r_ungrasp', 1, 1)
 
 cg.createWaypointEdge ('left', 'both', 'b_r_grasp', 1, 10)
 
-cg.setConstraints (edge='b_r_ungrasp_e1', lockDof = lockbox)
 cg.setConstraints (node='b_r_ungrasp_n0', grasp = 'l_grasp', pregrasp = 'r_pregrasp')
 cg.setConstraints (edge='b_r_ungrasp_e0', lockDof = lockbox)
 cg.setConstraints (edge='b_r_grasp_e1', lockDof = lockbox)
 cg.setConstraints (node='b_r_grasp_n0', grasp = 'l_grasp', pregrasp = 'r_pregrasp')
-cg.setConstraints (edge='b_r_grasp_e0', lockDof = lockbox)
 # 4}}}
 
 # Loops {{{4
 cg.createEdge ('free', 'free', 'move_free', 1)
 
 cg.createEdge ('left', 'left', 'l_keep_grasp', 5)
-cg.createLevelSetEdge ('left', 'left', 'l_keep_grasp_ls', 10)
 
 cg.createEdge ('right', 'right', 'r_keep_grasp', 5)
-cg.createLevelSetEdge ('right', 'right', 'r_keep_grasp_ls', 10)
 
 cg.setConstraints (edge='move_free', lockDof = lockbox)
-cg.client.graph.setLevelSetConstraints (cg.edges['l_keep_grasp_ls'], [], lockbox)
-cg.client.graph.setLevelSetConstraints (cg.edges['r_keep_grasp_ls'], [], lockbox)
 # 4}}}
 
 cg.setConstraints (graph = True, lockDof = lockhands)
