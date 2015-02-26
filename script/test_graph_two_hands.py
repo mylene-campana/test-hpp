@@ -2,7 +2,7 @@
 from hpp.corbaserver.manipulation.pr2 import Robot
 from hpp.corbaserver.manipulation import ProblemSolver
 from hpp.gepetto.manipulation import Viewer, ViewerFactory
-from hpp.gepetto import PathPlayer
+from hpp.gepetto import PathPlayer, PathPlayerGui
 from math import sqrt
 
 class Box (object):
@@ -23,12 +23,11 @@ class Environment (object):
 # Load robot and object. {{{3
 robot = Robot ('pr2-box', 'pr2', rootJointType = "anchor")
 ps = ProblemSolver (robot)
-r = ViewerFactory (ps)
+vf = ViewerFactory (ps)
 
-robot.client.manipulation.robot.setRootJointPosition ('pr2', (-3.2, -4, 0, 1, 0, 0, 0))
-r.loadObjectModel (Box, 'box')
-r.buildCompositeRobot (['pr2', 'box'])
-r.loadEnvironmentModel (Environment, "kitchen_area")
+robot.setJointPosition ('pr2/base_joint', (-3.2, -4, 0, 1, 0, 0, 0))
+vf.loadObjectModel (Box, 'box')
+vf.loadEnvironmentModel (Environment, "kitchen_area")
 robot.setJointBounds ("box/base_joint_xyz", [-3,-2,-5,-3,0.7,1])
 # 3}}}
 
@@ -72,7 +71,7 @@ from hpp.corbaserver.manipulation import ConstraintGraph
 cg = ConstraintGraph (robot, 'graph')
 
 robot.client.manipulation.problem.createPlacementConstraint (
-  'box_placement', 'box', 'box/base_joint_SO3', 'box_surface', 'kitchen_area/pancake_table_table_top')
+  'box_placement', 'box/base_joint_SO3', 'box/box_surface', 'kitchen_area/pancake_table_table_top')
 
 jointNames = dict ()
 jointNames['all'] = robot.getJointNames ()
@@ -102,7 +101,19 @@ lockrhand = ['r_l_finger','r_r_finger'];
 ps.createLockedJoint ('r_l_finger', 'pr2/r_gripper_l_finger_joint', [0.5])
 ps.createLockedJoint ('r_r_finger', 'pr2/r_gripper_r_finger_joint', [0.5])
 
-lockhands = ['l_l_finger','l_r_finger','r_l_finger','r_r_finger'];
+lockhands = lockrhand + locklhand
+
+lockHeadAndTorso = ['head_pan', 'head_tilt', 'torso', 'laser'];
+ps.createLockedJoint ('head_pan', 'pr2/head_pan_joint',
+    [q_init[robot.rankInConfiguration['pr2/head_pan_joint']]])
+ps.createLockedJoint ('head_tilt', 'pr2/head_tilt_joint',
+    [q_init[robot.rankInConfiguration['pr2/head_tilt_joint']]])
+ps.createLockedJoint ('torso', 'pr2/torso_lift_joint',
+    [q_init[robot.rankInConfiguration['pr2/torso_lift_joint']]])
+ps.createLockedJoint ('laser', 'pr2/laser_tilt_mount_joint',
+    [q_init[robot.rankInConfiguration['pr2/laser_tilt_mount_joint']]])
+
+lockAll = lockhands + lockHeadAndTorso
 
 # 3}}}
 
@@ -164,7 +175,7 @@ cg.createEdge ('right', 'right', 'r_keep_grasp', 5)
 cg.setConstraints (edge='move_free', lockDof = lockbox)
 # 4}}}
 
-cg.setConstraints (graph = True, lockDof = lockhands)
+cg.setConstraints (graph = True, lockDof = lockAll)
 # 3}}}
 
 res = ps.client.manipulation.problem.applyConstraints (cg.nodes['free'], q_init)
