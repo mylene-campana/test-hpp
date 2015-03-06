@@ -21,7 +21,7 @@ r (q0)
 # Add constraints
 wcl = WsClient ()
 wcl.problem.addStaticStabilityConstraints ("balance", q0, robot.leftAnkle,
-                                           robot.rightAnkle)
+                                           robot.rightAnkle, "")
 
 ps.setNumericalConstraints ("balance", ["balance/relative-com",
                                                 "balance/relative-orientation",
