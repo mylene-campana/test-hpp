@@ -119,6 +119,27 @@ lockAll = lockhands + lockHeadAndTorso
 
 # Create the graph. {{{3
 
+_ = dict ()
+# Create a dictionnary to translate human readable names into LaTeX expressions.
+# This goes well with option -tmath of dot2tex command line.
+# {{{4
+_["both"]="2 grasps"
+_["left"]="Left grasp"
+_["right"]="Right grasp"
+_["free"]="No grasp"
+
+# _["r_grasp"]=""
+# _["l_grasp"]=""
+# _["b_r_grasp"]=""
+# _["b_l_grasp"]=""
+# _["b_r_ungrasp"]=""
+# _["b_l_ungrasp"]=""
+_["move_free"]=""
+_["r_keep_grasp"]=""
+_["l_keep_grasp"]=""
+# 4}}}
+cg.setTextToTeXTranslation (_)
+
 cg.createNode (['both', 'right', 'left', 'free'])
 
 cg.setConstraints (node='free', numConstraints=['box_placement'])

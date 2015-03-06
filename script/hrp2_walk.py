@@ -5,18 +5,17 @@ from hpp.gepetto.manipulation import Viewer, ViewerFactory
 from hpp.gepetto import PathPlayer, PathPlayerGui
 
 Robot.urdfSuffix = '_capsule_mesh'
-Robot.srdfSuffix = '_manipulation_moveit'
+Robot.srdfSuffix = '_manipulation'
 
 # Load HRP2 {{{3
-robot = Robot ('hrp2-e', 'hrp2')
+robot = Robot ('hrp2', 'hrp2')
 ps = ProblemSolver (robot)
 vf = ViewerFactory (ps)
 
-vf.buildCompositeRobot (['hrp2'])
 robot.setJointBounds ("hrp2/base_joint_xyz", [-0.2,0.8,-0.5,0.5, 0,2])
 
 ps.selectPathOptimizer ('None')
-ps.selectPathProjector ('Progressive', 0.02)
+ps.selectPathProjector ('Progressive', 0.2)
 ps.setErrorThreshold (1e-3)
 ps.setMaxIterations (40)
 # 3}}}
@@ -32,8 +31,8 @@ q_init [irh:irh+6] = [0.75, -0.75, 0.75, -0.75, 0.75, -0.75]
 
 ibjxyz = robot.rankInConfiguration ['hrp2/base_joint_xyz']
 q_goal = q_init [::]
-# q_goal [ibjxyz:ibjxyz+2] = [0.5, 0]
-q_goal [ibjxyz:ibjxyz+2] = [0.2, 0]
+q_goal [ibjxyz:ibjxyz+2] = [0.5, 0]
+# q_goal [ibjxyz:ibjxyz+2] = [0.2, 0]
 
 # 3}}}
 
@@ -126,7 +125,7 @@ _["right_to_rightside_ls"]=""
 _["rightside_to_double"]=""
 _["right_support"]=""
 # 4}}}
-graph.setTextToTeXTranslation (_)
+# graph.setTextToTeXTranslation (_)
 
 graph.createNode (["both_left","both_right","both","left","right"])
 

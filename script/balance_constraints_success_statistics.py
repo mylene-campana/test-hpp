@@ -6,12 +6,15 @@ from hpp.corbaserver import Client, ProblemSolver
 from hpp.corbaserver.wholebody_step import Client as WSClient
 from hpp.corbaserver.wholebody_step import Problem
 from hpp.corbaserver.hrp2 import Robot
+from hpp.gepetto import ViewerFactory
+
 
 Robot.urdfSuffix = '_capsule'
 Robot.srdfSuffix = '_capsule'
 
 robot = Robot ('hrp2')
 p = ProblemSolver (robot)
+vf = ViewerFactory (p)
 wcl = WSClient ()
 q0 = robot.getInitialConfig ()
 
@@ -24,6 +27,14 @@ balanceConstraints = [constraintName + "/relative-com",
                       constraintName + "/relative-position",
                       constraintName + "/orientation-left-foot",
                       constraintName + "/position-left-foot"]
+c2name = "stability"
+wcl.problem.addStabilityConstraints (c2name, q0, robot.leftAnkle,
+                                     robot.rightAnkle, "", Problem.ALIGNED_COM)
+b2C = [ c2name + "/com-between-feet",
+        c2name + "/orientation-right",
+        c2name + "/orientation-left",
+        c2name + "/position-right",
+        c2name + "/position-left"]
 
 robot.setJointBounds ("base_joint_xyz", [-4,4,-4,4,-4,4])
 
@@ -41,3 +52,8 @@ for constraint in balanceConstraints:
   testConstraint ([constraint])
 
 testConstraint (balanceConstraints)
+
+for constraint in b2C:
+  testConstraint ([constraint])
+
+testConstraint (b2C)

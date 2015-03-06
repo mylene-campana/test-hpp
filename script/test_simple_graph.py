@@ -1,14 +1,15 @@
 # vim: foldmethod=marker foldlevel=2
 from hpp.corbaserver.manipulation.hrp2 import Robot
 from hpp.corbaserver.manipulation import ProblemSolver, ConstraintGraph
-from hpp.gepetto.manipulation import Viewer
+from hpp.gepetto.manipulation import Viewer, ViewerFactory
+from hpp.gepetto import PathPlayer, PathPlayerGui
 
 class ScrewGun (object):
   rootJointType = 'freeflyer'
   packageName = 'airbus_environment'
   meshPackageName = 'airbus_environment'
   urdfName = 'screw_gun'
-  urdfSuffix = "_massless"
+  urdfSuffix = ""
   srdfSuffix = ""
 
 Robot.urdfSuffix = '_capsule_mesh'
@@ -18,13 +19,13 @@ Robot.srdfSuffix = '_manipulation'
 robot = Robot ('hrp2-screw', 'hrp2')
 ps = ProblemSolver (robot)
 ps.selectPathPlanner ("M-RRT")
-r = Viewer (ps)
-r.loadObjectModel (ScrewGun, 'screw_gun')
-r.buildCompositeRobot (['hrp2', 'screw_gun'])
+vf = ViewerFactory (ps)
+vf.loadObjectModel (ScrewGun, 'screw_gun')
 for d in ["hrp2", "screw_gun"]:
   robot.setJointBounds (d+"/base_joint_xyz", [-4,4,-4,4,-4,4])
 
 ps.selectPathOptimizer ('None')
+ps.selectPathProjector ("Progressive", 0.2)
 ps.setErrorThreshold (1e-3)
 ps.setMaxIterations (40)
 # 3}}}
@@ -33,7 +34,8 @@ ps.setMaxIterations (40)
 half_sitting = q = robot.getInitialConfig ()
 q_init = half_sitting [::]
 # Set initial position of screw-driver
-q_init [-7:] = [2, 1, 0.65, 0.7071067811865476, 0, -0.7071067811865475, 0]
+# q_init [-7:] = [2, 1, 0.65, 0.7071067811865476, 0, -0.7071067811865475, 0]
+q_init [-7:] = [2, 1, 0.65, 0.7071067811865476, 0.5, -0.5, 0]
 # Open left hand
 ilh = robot.rankInConfiguration ['hrp2/LARM_JOINT6']
 q_init [ilh:ilh+6] = [0.75, -0.75, 0.75, -0.75, 0.75, -0.75]
@@ -57,7 +59,8 @@ for n in jointNames['all']:
   if not n.startswith ("hrp2/LARM"):
     jointNames['allButHRP2LeftArm'].append (n)
 
-graph.createGrasp ('l_grasp', 'hrp2/leftHand', 'screw_gun/handle2', jointNames ['hrp2'])
+ps.addPassiveDofs ('hrp2', jointNames ['hrp2'])
+graph.createGrasp ('l_grasp', 'hrp2/leftHand', 'screw_gun/handle2', 'hrp2')
 graph.createPreGrasp ('l_pregrasp', 'hrp2/leftHand', 'screw_gun/handle2')
 
 lockscrewgun = ps.lockFreeFlyerJoint ('screw_gun/base_joint', 'screwgun_lock',
@@ -76,7 +79,8 @@ ps.createLockedJoint \
 ps.createLockedJoint \
     ('lhand_4', 'hrp2/LHAND_JOINT4', [q_init[ilh + 5],])
 
-ps.createStaticStabilityConstraints ("balance", q_init)
+ps.addPartialCom ('hrp2', ['hrp2/base_joint_xyz'])
+ps.createStaticStabilityConstraints ("balance-hrp2", q_init, 'hrp2')
 # 3}}}
 
 # Create the graph of constraints {{{3
@@ -99,12 +103,9 @@ graph.setConstraints (edge='ungrasp_e1', lockDof = lockscrewgun)
 graph.setConstraints (edge='grasp_e0', lockDof = lockscrewgun)
 graph.setConstraints (node='grasp_n0', pregrasp = 'l_pregrasp')
 graph.setConstraints (edge='grasp_e1', lockDof = lockscrewgun)
-graph.client.graph.setLevelSetConstraints (graph.edges['keep_grasp_ls'], [], lockscrewgun)
+graph.setLevelSetConstraints ('keep_grasp_ls', lockDof = lockscrewgun)
 graph.setConstraints (graph=True, lockDof = locklhand, numConstraints=ps.balanceConstraints ())
 # 3}}}
 
 ps.setInitialConfig (q_init)
 ps.addGoalConfig (q_goal)
-
-from hpp.gepetto import PathPlayer
-pp = PathPlayer (robot.client.basic, r)
