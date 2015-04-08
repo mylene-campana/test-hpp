@@ -70,7 +70,7 @@ ps.createOrientationConstraint (rightfoot[0][2], robot.rightAnkle, "", (1,0,0,0)
 # ps.createOrientationConstraint (rightfoot[1][2], robot.rightAnkle, "", (1,0,0,0), (False, False, True))
 # ps.client.basic.problem.setConstantRightHandSide (rightfoot[1][2], True)
 
-ps.createStabilityConstraints ("both", q_init)
+ps.createStaticStabilityConstraints ("both", q_init, type = ProblemSolver.ALIGNED_COM)
 bothfeet = [ ["both/com-between-feet", ],
              [] ]
 bothfeet[0].extend (leftfoot[0][1:])
