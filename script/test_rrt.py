@@ -63,4 +63,4 @@ ps.addGoalConfig (q2proj)
 ps.solve ()
 
 pp = PathPlayer (cl, r)
-pp (1)
+#pp (1)

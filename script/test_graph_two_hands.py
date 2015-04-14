@@ -82,6 +82,7 @@ for n in jointNames['all']:
     jointNames['pr2'].append (n)
   if not n.startswith ("pr2/l_gripper"):
     jointNames['allButPR2LeftArm'].append (n)
+
 ps.addPassiveDofs ('pr2', jointNames ['pr2'])
 
 cg.createGrasp ('l_grasp', 'pr2/l_gripper', 'box/handle', 'pr2')
@@ -202,10 +203,15 @@ cg.setConstraints (graph = True, lockDof = lockAll)
 res = ps.client.manipulation.problem.applyConstraints (cg.nodes['free'], q_init)
 if not res[0]:
   raise Exception ('Init configuration could not be projected.')
+
 q_init_proj = res [1]
 res = ps.client.manipulation.problem.applyConstraints (cg.nodes['free'], q_goal)
 if not res[0]:
   raise Exception ('Goal configuration could not be projected.')
+
 q_goal_proj = res [1]
 ps.setInitialConfig (q_init_proj)
 ps.addGoalConfig (q_goal_proj)
+
+r = vf.createRealClient()
+pp = PathPlayer (robot.client.basic, r)

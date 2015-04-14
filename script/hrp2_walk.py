@@ -176,3 +176,6 @@ graph.setConstraints (graph=True, lockDof = lockDofs)
 
 ps.setInitialConfig (q_init)
 ps.addGoalConfig (q_goal)
+
+r = vf.createRealClient()
+pp = PathPlayer (robot.client.basic, r)
