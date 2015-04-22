@@ -134,9 +134,9 @@ _["free"]="No grasp"
 # _["b_l_grasp"]=""
 # _["b_r_ungrasp"]=""
 # _["b_l_ungrasp"]=""
-_["move_free"]=""
-_["r_keep_grasp"]=""
-_["l_keep_grasp"]=""
+_["move_free"]="move_free"
+_["r_keep_grasp"]="r_keep_grasp"
+_["l_keep_grasp"]="l_keep_grasp"
 # 4}}}
 cg.setTextToTeXTranslation (_)
 
