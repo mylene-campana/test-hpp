@@ -62,8 +62,7 @@ ps.addPassiveDofs ('hrp2', jointNames ['hrp2'])
 graph.createGrasp ('l_grasp', 'hrp2/leftHand', 'screw_gun/handle2', 'hrp2')
 graph.createPreGrasp ('l_pregrasp', 'hrp2/leftHand', 'screw_gun/handle2')
 
-lockscrewgun = ps.lockFreeFlyerJoint ('screw_gun/base_joint', 'screwgun_lock',
-    compType = 'Equality')
+lockscrewgun = ps.lockFreeFlyerJoint ('screw_gun/base_joint', 'screwgun_lock')
 
 locklhand = ['larm_6','lhand_0','lhand_1','lhand_2','lhand_3','lhand_4']
 ps.createLockedJoint ('larm_6' , 'hrp2/LARM_JOINT6' , [q_init[ilh],])

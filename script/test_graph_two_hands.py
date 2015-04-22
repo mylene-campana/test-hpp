@@ -91,7 +91,7 @@ cg.createGrasp ('r_grasp', 'pr2/r_gripper', 'box/handle2', 'pr2')
 cg.createPreGrasp ('l_pregrasp', 'pr2/l_gripper', 'box/handle')
 cg.createPreGrasp ('r_pregrasp', 'pr2/r_gripper', 'box/handle2')
 
-lockbox = ps.lockFreeFlyerJoint ('box/base_joint', 'box_lock', compType = 'Equality')
+lockbox = ps.lockFreeFlyerJoint ('box/base_joint', 'box_lock')
 
 locklhand = ['l_l_finger','l_r_finger'];
 ps.createLockedJoint ('l_l_finger', 'pr2/l_gripper_l_finger_joint', [0.5])
