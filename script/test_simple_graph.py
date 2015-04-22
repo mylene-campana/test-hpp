@@ -24,7 +24,6 @@ vf.loadObjectModel (ScrewGun, 'screw_gun')
 for d in ["hrp2", "screw_gun"]:
   robot.setJointBounds (d+"/base_joint_xyz", [-4,4,-4,4,-4,4])
 
-ps.selectPathOptimizer ('None')
 ps.selectPathProjector ("Progressive", 0.2)
 ps.setErrorThreshold (1e-3)
 ps.setMaxIterations (40)

@@ -61,7 +61,6 @@ q_inter = [-0.8017105239677402, -0.5977125025958312, -0.796440524800078, 0.60471
 # 3}}}
 
 robot.client.basic.problem.resetRoadmap ()
-robot.client.basic.problem.selectPathOptimizer ('None')
 robot.client.basic.problem.setErrorThreshold (1e-3)
 robot.client.basic.problem.setMaxIterations (40)
 ps.selectPathProjector ('Progressive', 0.2)

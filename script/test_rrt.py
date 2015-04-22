@@ -60,6 +60,7 @@ else:
 
 ps.setInitialConfig (q1proj)
 ps.addGoalConfig (q2proj)
+ps.addPathOptimizer ("RandomShortcut")
 ps.solve ()
 
 pp = PathPlayer (cl, r)

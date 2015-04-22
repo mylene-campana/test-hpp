@@ -14,7 +14,6 @@ vf = ViewerFactory (ps)
 
 robot.setJointBounds ("hrp2/base_joint_xyz", [-0.2,0.8,-0.5,0.5, 0,2])
 
-ps.selectPathOptimizer ('None')
 ps.selectPathProjector ('Progressive', 0.2)
 ps.setErrorThreshold (1e-3)
 ps.setMaxIterations (40)
