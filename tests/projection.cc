@@ -53,7 +53,9 @@ using hpp::model::DevicePtr_t;
 using hpp::model::JointPtr_t;
 using hpp::core::DifferentiableFunctionPtr_t;
 using hpp::core::NumericalConstraint;
+using hpp::core::NumericalConstraintPtr_t;
 using hpp::core::Constraint;
+using hpp::core::ConstraintPtr_t;
 using hpp::core::ConfigProjector;
 using hpp::core::ConfigProjectorPtr_t;
 using hpp::core::BasicConfigurationShooter;
@@ -66,7 +68,7 @@ using hpp::debug::Timer;
 namespace hpp_test {
   DevicePtr_t robot;
 
-  std::vector <std::vector <DifferentiableFunctionPtr_t> > functionSets;
+  std::vector <std::vector <NumericalConstraintPtr_t> > functionSets;
 
   template <typename T>
     void recursiveSubPartOf (const std::vector <T>& set, std::vector < std::vector <T> >& subparts) {
@@ -113,11 +115,12 @@ namespace hpp_test {
     JointPtr_t  leftAnkle = robot->getJointByName ("LLEG_JOINT5");
     JointPtr_t rightAnkle = robot->getJointByName ("RLEG_JOINT5");
     Configuration_t nc = robot->neutralConfiguration ();
-    std::vector <DifferentiableFunctionPtr_t> funcs =
-      hpp::wholebodyStep::createSlidingStabilityConstraint (robot, leftAnkle, rightAnkle, nc);
+    std::vector <NumericalConstraintPtr_t> funcs =
+      hpp::wholebodyStep::createSlidingStabilityConstraint
+      (robot, leftAnkle, rightAnkle, nc);
     functionSets.clear ();
     if (partOf)
-      recursiveSubPartOf <DifferentiableFunctionPtr_t> (funcs, functionSets);
+      recursiveSubPartOf <NumericalConstraintPtr_t> (funcs, functionSets);
     else
       functionSets.push_back (funcs);
   }
@@ -143,12 +146,14 @@ namespace hpp_test {
     JointPtr_t  leftWrist = robot->getJointByBodyName ("l_gripper_tool_frame");
     JointPtr_t rightWrist = robot->getJointByBodyName ("r_gripper_tool_frame");
     Configuration_t nc = robot->neutralConfiguration ();
-    std::vector <DifferentiableFunctionPtr_t> funcs;
+    std::vector <NumericalConstraintPtr_t> funcs;
     fcl::Transform3f transform; transform.setIdentity ();
-    funcs.push_back (hpp::constraints::RelativeTransformation::create (robot, leftWrist, rightWrist, transform));
+    funcs.push_back (NumericalConstraint::create
+		     (hpp::constraints::RelativeTransformation::create
+		      (robot, leftWrist, rightWrist, transform)));
     functionSets.clear ();
     if (partOf)
-      recursiveSubPartOf <DifferentiableFunctionPtr_t> (funcs, functionSets);
+      recursiveSubPartOf <NumericalConstraintPtr_t> (funcs, functionSets);
     else
       functionSets.push_back (funcs);
   }
@@ -201,7 +206,7 @@ namespace projection {
     for (size_t i = 0; i < functionSets.size(); i++) {
       cp.push_back (ConfigProjector::create (robot, "", ERROR_THRESHOLD, MAX_ITERATIONS));
       for (size_t j = 0; j < functionSets[i].size(); j++)
-        cp.back()->add (NumericalConstraint::create (functionSets[i][j]));
+        cp.back()->add (functionSets[i][j]);
     }
     MESSAGE_INF ("There are " << cp.size() << " projectors to be tested.");
 
@@ -278,16 +283,22 @@ namespace svd {
 
       bool isSatisfied (ConfigurationIn_t config, vector_t& error) {
 	computeValueAndJacobian (config);
-	return value_.squaredNorm () - squareErrorThreshold_;
+	error = value_;
+	return value_.squaredNorm () < squareErrorThreshold_;
       }
 
-      void addConstraint (const DifferentiableFunctionPtr_t& constraint)
+      ConstraintPtr_t copy() const
       {
-        size_ += constraint->outputSize ();
-        vector_t value (constraint->outputSize ());
-        matrix_t jacobian (constraint->outputSize (),
+	abort ();
+      }
+      void addConstraint (const NumericalConstraintPtr_t& constraint)
+      {
+	DifferentiableFunctionPtr_t function = constraint->functionPtr ();
+        size_ += function->outputSize ();
+        vector_t value (function->outputSize ());
+        matrix_t jacobian (function->outputSize (),
             robot_->numberDof ());
-        constraints_.push_back (FunctionValueAndJacobian_t (constraint, value,
+        constraints_.push_back (FunctionValueAndJacobian_t (function, value,
               jacobian));
         value_.resize (size_);
         Jacobian_.resize (size_, robot_->numberDof ());
@@ -607,11 +618,11 @@ namespace shuffle {
     using hpp_test::functionSets;
 
     std::vector <ConfigProjectorPtr_t> cp;
-    std::vector <DifferentiableFunctionPtr_t> dfs = functionSets.front ();
+    std::vector <NumericalConstraintPtr_t> dfs = functionSets.front ();
     for (size_t i = 0; i < 10; i++) {
       cp.push_back (ConfigProjector::create (robot, "", ERROR_THRESHOLD, MAX_ITERATIONS));
       for (size_t j = 0; j < dfs.size(); j++)
-        cp.back()->add (NumericalConstraint::create (dfs[j]));
+        cp.back()->add (dfs[j]);
       std::random_shuffle (dfs.begin (), dfs.end ());
     }
     MESSAGE_INF ("There are " << cp.size() << " ConfigProjector to be tested.");
