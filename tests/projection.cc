@@ -271,9 +271,14 @@ namespace svd {
     public:
       vector_t offsetFromConfig (ConfigurationIn_t /* config */) {return vector_t ();}
 
-      bool isSatisfied (ConfigurationIn_t config) { 
+      bool isSatisfied (ConfigurationIn_t config) {
         computeValueAndJacobian (config);
         return value_.squaredNorm () < squareErrorThreshold_;
+      }
+
+      bool isSatisfied (ConfigurationIn_t config, vector_t& error) {
+	computeValueAndJacobian (config);
+	return value_.squaredNorm () - squareErrorThreshold_;
       }
 
       void addConstraint (const DifferentiableFunctionPtr_t& constraint)
@@ -452,7 +457,7 @@ namespace svd {
 
       mutable matrix_t reducedJacobian_;
       mutable vector_t dqSmall_;
-  }; // class SVDTest 
+  }; // class SVDTest
 
   struct Result {
     Configuration_t before, after;
