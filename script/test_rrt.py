@@ -4,6 +4,7 @@ from hpp.gepetto import Viewer, PathPlayer
 from hpp.corbaserver.hrp2 import Robot
 from hpp.corbaserver import ProblemSolver
 from hpp.corbaserver.wholebody_step.client import Client as WsClient
+from hpp.corbaserver.wholebody_step import Problem
 
 Robot.urdfSuffix = '_capsule'
 Robot.srdfSuffix= '_capsule'
@@ -22,7 +23,8 @@ r (q0)
 # Add constraints
 wcl = WsClient ()
 wcl.problem.addStaticStabilityConstraints ("balance", q0, robot.leftAnkle,
-                                           robot.rightAnkle)
+                                           robot.rightAnkle, "",
+                                           Problem.SLIDING)
 
 
 ps.setNumericalConstraints ("balance", ["balance/relative-com",
@@ -61,9 +63,11 @@ else:
 
 ps.setInitialConfig (q1proj)
 ps.addGoalConfig (q2proj)
+ps.addPathOptimizer ("RandomShortcut")
 ps.solve ()
 
 pp = PathPlayer (cl, r)
+
 
 pp (1)
 

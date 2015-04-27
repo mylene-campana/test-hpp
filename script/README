@@ -1,0 +1,4 @@
+hrp2_walk.py: quasi-static walk for HRP2 using manipulation algorithms
+test_graph_two_hands.py: PR2 manipulating an object with two hands
+test_rrt.py: HRP2 sliding on the ground
+test_simple_graph.py: HRP2 grasping a flying object
