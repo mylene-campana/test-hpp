@@ -17,39 +17,39 @@ r(q0)
 
 # Display furnitures in RViz
 k=2.3
-kk=k-1
+kk=k-1 # 1.3
 r.addObject('lamp','lamp_base')
-lamp_pos= (0-0.3,-k,0,1,0,0,0)
+lamp_pos= (0-0.3,-k,0,1,0,0,0) # -0.3 2.3 0
 r.moveObject('lamp',lamp_pos)
 r.addObject('armchair','armchair_base')
-armchair_pos= (kk,kk,0,0.707,0,0,-0.707)
+armchair_pos= (kk,kk,0,0.707,0,0,-0.707) # 1.3 1.3 0
 r.moveObject('armchair',armchair_pos)
 r.addObject('pc','pc_base')
-pc_pos= (k,-k+0.4,1.04,0.707,0,0,-0.707)
+pc_pos= (k,-k+0.4,1.04,0.707,0,0,-0.707) # 2.3 -0.9 1.04
 r.moveObject('pc',pc_pos)
 r.addObject('desk','desk_base')
-desk_pos= (k,-k,0,0.707,0,0,-0.707)
+desk_pos= (k,-k,0,0.707,0,0,-0.707) # 2.3 -2.3 0
 r.moveObject('desk',desk_pos)
 r.addObject('chair','chair_base')
-chair_pos= (kk,-k+0.4,0,0.707,0,0,-0.707)
+chair_pos= (kk,-k+0.4,0,0.707,0,0,-0.707) # 1.3 -0.9 0
 r.moveObject('chair',chair_pos)
 r.addObject('table','table_base')
-table_pos= (0,kk,0,1,0,0,0)
+table_pos= (0,kk,0,1,0,0,0) # 0 1.3 0
 r.moveObject('table',table_pos)
 r.addObject('commode','commode_base')
-commode_pos= (-k-0.2,-k+0.2,0,0.707,0,0,0.707)
+commode_pos= (-k-0.2,-k+0.2,0,0.707,0,0,0.707) # -2.5 -1.1 0
 r.moveObject('commode',commode_pos)
 r.addObject('books','books_base')
-books_pos= (-k+0.1,-k,1,0.707,0,0,0.707)
+books_pos= (-k+0.1,-k,1,0.707,0,0,0.707) # -2.2 -2.3 1
 r.moveObject('books',books_pos)
 r.addObject('deskLamp','deskLamp_base')
-deskLamp_pos= (k+0.3,-k+0.2,0.98,0.707,0,0,-0.707)
+deskLamp_pos= (k+0.3,-k+0.2,0.98,0.707,0,0,-0.707) # 2.6 -2.1 0.98
 r.moveObject('deskLamp',deskLamp_pos)
 r.addObject('beer','beer_base')
-beer_pos= (0,kk,0.28,1,0,0,0) # on the "table basse"
+beer_pos= (0,kk,0.28,1,0,0,0) # on the "table basse" # 0 1.3 0.28
 r.moveObject('beer',beer_pos)
 r.addObject('stuff','stuff_base')
-stuff_pos= (kk-0.2,-k-0.4,1.4,0.707,0,0,0.707)
+stuff_pos= (kk-0.2,-k-0.4,1.4,0.707,0,0,0.707) # 1.1 1.7 1.4
 r.moveObject('stuff',stuff_pos)
 r(q0) # end of display
 

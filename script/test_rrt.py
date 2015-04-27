@@ -14,6 +14,7 @@ ps = ProblemSolver (robot)
 
 cl = robot.client
 
+Viewer.withFloor = True
 r = Viewer (ps)
 q0 = robot.getInitialConfig ()
 r (q0)

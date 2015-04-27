@@ -11,19 +11,21 @@ import time
 import sys
 sys.path.append('/local/mcampana/devel/hpp/src/test-hpp/script')
 
-robot = Robot ('puzzle_robot')
-cl = robot.client
+robot = Robot ('puzzle_robot') # object5
 robot.setJointBounds('base_joint_xyz', [-0.9, 0.9, -0.9, 0.9, -1.1, 1.1])
-r = ScenePublisher (robot)
+ps = ProblemSolver (robot)
+cl = robot.client
+r = Viewer (ps)
+pp = PathPlayer (cl, r)
 
 q1 = [0.0, 0.0, 0.6, 1.0, 0.0, 0.0, 0.0]; q2 = [0.0, 0.0, -0.6, 1.0, 0.0, 0.0, 0.0]
 #q1 = [0.0, 0.0, 0.8, 1.0, 0.0, 0.0, 0.0]; q2 = [0.0, 0.0, -0.8, 1.0, 0.0, 0.0, 0.0]
 #q1 = [0.5, 0.3, 0.8, 0.7071067812, 0.0, 0.7071067812, 0.0]; q2 = [0.0, -0.6, -0.5, 1.0, 0.0, 0.0, 0.0]
 r(q1)
 
-cl.problem.setInitialConfig (q1)
-cl.problem.addGoalConfig (q2)
-p = PathPlayer (cl, r)
+ps.setInitialConfig (q1)
+ps.addGoalConfig (q2)
+pp = PathPlayer (cl, r)
 
 # Load box obstacle in HPP for collision avoidance
 cl.obstacle.loadObstacleModel('puzzle_description','decor_very_easy','')
@@ -31,7 +33,7 @@ cl.obstacle.loadObstacleModel('puzzle_description','decor_very_easy','')
 #cl.obstacle.loadObstacleModel('puzzle_description','decor','')
 
 begin=time.time()
-cl.problem.solve ()
+ps.solve ()
 end=time.time()
 print "Solving time: "+str(end-begin)
 
@@ -39,7 +41,7 @@ len(cl.problem.nodes ())
 cl.problem.pathLength(0)
 
 from trajectory_plot import xyzPlot
-pathNum = 0
+pathNum = 1
 xyzPlot (cl, pathNum)
 
 # (Optional if environment ready) Display obstacle
